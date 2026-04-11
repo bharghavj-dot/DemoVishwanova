@@ -1,0 +1,61 @@
+# ── Trilens — Docker Compose (Local Development) ─────────────
+# Run: docker-compose up --build
+# ──────────────────────────────────────────────────────────────
+
+version: "3.9"
+
+services:
+  # ── PostgreSQL Database ──────────────────────────────────────
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: trilens
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2295
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d trilens"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  # ── FastAPI Backend ──────────────────────────────────────────
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      DATABASE_URL: postgresql://postgres:2295@db:5432/trilens
+      SECRET_KEY: ${SECRET_KEY:-trilens-dev-secret-key-change-me}
+      CORS_ORIGINS: http://localhost:3000,http://localhost:5173,http://localhost:8080
+      LLM_PROVIDER: ${LLM_PROVIDER:-offline}
+      GEMINI_API_KEY: ${GEMINI_API_KEY:-}
+      PORT: 8000
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./backend/uploads:/app/backend/uploads
+
+  # ── React Frontend ──────────────────────────────────────────
+  frontend:
+    build:
+      context: frontend
+      dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:
