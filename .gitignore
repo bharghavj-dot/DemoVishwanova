@@ -1,51 +1,50 @@
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-*.so
+# ── Dependencies ──────────────────────────
+node_modules/
+frontend/node_modules/
 
-# Environments
-.env
-.venv
-env/
-venv/
-ENV/
-env.bak/
-venv.bak/
+# ── Build output ──────────────────────────
+frontend/dist/
+frontend/.vite/
 
-# Environment files
+# ── Environment files ─────────────────────
 .env
 .env.local
-.env.development
-.env.test
-.env.production
-.auth.env
-*.pem
+.env.*.local
+frontend/.env
+frontend/.env.local
+backend/.env
 
-# Jupyter Notebook
-.ipynb_checkpoints
+# ── Python ────────────────────────────────
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+backend/__pycache__/
+backend/**/__pycache__/
+*.egg-info/
+.venv/
+venv/
 
-# pytest
-.pytest_cache/
-.coverage
-htmlcov/
+# ── SQLite DB (generated locally) ────────
+*.db
+backend/trilens.db
 
-# VS Code / IDE
+# ── IDE / Editor ──────────────────────────
 .vscode/
 .idea/
 *.swp
 *.swo
-
-# Diagnostic File Uploads directory built dynamically
-backend/uploads/
-
-# OS generated files
+*~
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
 Thumbs.db
 
-visualdiagnose_file_structure.html
+# ── Logs ──────────────────────────────────
+*.log
+npm-debug.log*
+
+# ── OS files ──────────────────────────────
+.DS_Store
+desktop.ini
+
+# ── Mock adapter (dev only) ──────────────
+frontend/src/api/mock.js

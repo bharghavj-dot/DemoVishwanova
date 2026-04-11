@@ -1,0 +1,179 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  body {
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    background-color: #F0F4F4;
+    color: #1A2C2C;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: #F0F4F4;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: #b3d4d3;
+    border-radius: 3px;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: #1B4D4B;
+  }
+}
+
+@layer components {
+  .glass-card {
+    background: rgba(255, 255, 255, 0.75);
+    backdrop-filter: blur(12px) saturate(1.8);
+    -webkit-backdrop-filter: blur(12px) saturate(1.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  }
+
+  .btn-primary {
+    @apply bg-primary-500 text-white font-semibold py-3 px-6 rounded-xl
+           transition-all duration-300 ease-out
+           hover:bg-primary-600 hover:shadow-clinical-hover hover:-translate-y-0.5
+           active:translate-y-0 active:shadow-clinical
+           disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0;
+  }
+
+  .btn-outline {
+    @apply border-2 border-primary-500 text-primary-500 font-semibold py-3 px-6 rounded-xl
+           transition-all duration-300 ease-out bg-transparent
+           hover:bg-primary-50 hover:shadow-clinical hover:-translate-y-0.5
+           active:translate-y-0;
+  }
+
+  .btn-ghost {
+    @apply text-primary-500 font-semibold py-2 px-4 rounded-lg
+           transition-all duration-300 ease-out bg-transparent
+           hover:bg-primary-50;
+  }
+
+  .card {
+    @apply bg-white rounded-2xl shadow-clinical border border-clinical-border
+           transition-all duration-300 ease-out
+           hover:shadow-clinical-lg hover:-translate-y-1;
+  }
+
+  .card-static {
+    @apply bg-white rounded-2xl shadow-clinical border border-clinical-border;
+  }
+
+  .input-field {
+    @apply w-full bg-gray-100 border-0 rounded-xl py-3.5 px-4 pl-12
+           text-clinical-text placeholder-clinical-muted
+           transition-all duration-300
+           focus:outline-none focus:ring-2 focus:ring-primary-300 focus:bg-white;
+  }
+
+  .badge {
+    @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider;
+  }
+
+  .badge-success {
+    @apply badge bg-green-100 text-green-700;
+  }
+
+  .badge-warning {
+    @apply badge bg-amber-100 text-amber-700;
+  }
+
+  .badge-danger {
+    @apply badge bg-red-100 text-red-700;
+  }
+
+  .badge-info {
+    @apply badge bg-primary-50 text-primary-500;
+  }
+
+  .nav-link {
+    @apply relative px-1 py-1 text-sm font-medium text-clinical-muted 
+           transition-all duration-300 hover:text-primary-500;
+  }
+
+  .nav-link.active {
+    @apply text-primary-500;
+  }
+
+  .nav-link::after {
+    content: '';
+    @apply absolute bottom-0 left-0 w-full h-0.5 bg-primary-500
+           transform scale-x-0 origin-right transition-transform duration-300;
+  }
+
+  .nav-link:hover::after,
+  .nav-link.active::after {
+    @apply scale-x-100 origin-left;
+  }
+
+  .section-title {
+    @apply text-2xl font-bold text-clinical-text;
+  }
+
+  .label-text {
+    @apply text-xs font-semibold uppercase tracking-widest text-clinical-muted mb-2;
+  }
+
+  /* Confidence gauge circle */
+  .gauge-circle {
+    transform: rotate(-90deg);
+  }
+
+  .gauge-circle circle.gauge-track {
+    fill: none;
+    stroke: #E2E8E8;
+    stroke-width: 8;
+  }
+
+  .gauge-circle circle.gauge-fill {
+    fill: none;
+    stroke: #1B4D4B;
+    stroke-width: 8;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 1.5s ease-out;
+  }
+
+  /* Progress bar animation */
+  .progress-bar {
+    @apply h-2 rounded-full bg-clinical-border overflow-hidden;
+  }
+
+  .progress-fill {
+    @apply h-full rounded-full transition-all duration-1000 ease-out;
+  }
+
+  /* Animate on scroll */
+  .reveal {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: all 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer utilities {
+  .text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-primary-500 to-primary-300;
+  }
+}
