@@ -29,3 +29,4 @@ pandas
 opencv-python
 sqlalchemy
 gunicorn
+python-multipart
