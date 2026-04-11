@@ -22,6 +22,12 @@ DATABASE_URL = os.environ.get(
     "postgresql://postgres:2295@localhost:5432/trilens",
 )
 
+# Render gives postgres:// but SQLAlchemy requires postgresql://
+if DATABASE_URL.startswith("postgres://"):
+    DATABASE_URL = DATABASE_URL.replace("postgres://", "postgresql://", 1)
+
+print(f"[database] Connecting to: {DATABASE_URL.split('@')[-1] if '@' in DATABASE_URL else 'local'}")
+
 # ── Engine & Session ──────────────────────────────────────────────────────────
 
 engine = create_engine(
