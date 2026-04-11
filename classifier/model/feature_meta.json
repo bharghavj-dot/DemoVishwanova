@@ -1,0 +1,42 @@
+{
+  "feature_columns": [
+    "tongue_pallor",
+    "tongue_crack_density",
+    "tongue_fur_color",
+    "tongue_surface_smoothness",
+    "tongue_moisture",
+    "eye_sclera_yellow",
+    "eye_conjunctiva_pallor",
+    "eye_cornea_clarity",
+    "eye_pupil_symmetry",
+    "eye_discharge_present",
+    "nail_brittleness",
+    "nail_shape_abnormality",
+    "nail_clubbing_ratio",
+    "nail_pitting_count",
+    "nail_ridge_score"
+  ],
+  "classes": [
+    "anaemia",
+    "cyanosis",
+    "diabetes",
+    "healthy",
+    "hypothyroidism",
+    "iron_deficiency",
+    "jaundice",
+    "liver_disease",
+    "psoriasis"
+  ],
+  "num_classes": 9,
+  "supported_diseases": [
+    "anaemia",
+    "cyanosis",
+    "diabetes",
+    "hypothyroidism",
+    "iron_deficiency",
+    "jaundice",
+    "liver_disease",
+    "psoriasis",
+    "healthy"
+  ]
+}
