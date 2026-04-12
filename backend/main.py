@@ -74,6 +74,13 @@ async def startup_event():
     except Exception as e:
         print(f"[startup] WARNING: {e}")
 
+    # Auto-seed demo data if the database is empty
+    try:
+        from backend.seed import seed
+        seed()
+    except Exception as e:
+        print(f"[startup] Seed skipped or failed: {e}")
+
 
 # ── Health & Root ─────────────────────────────────────────────────────────────
 @app.get("/health", response_model=HealthResponse, tags=["System"])
