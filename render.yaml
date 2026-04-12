@@ -28,8 +28,9 @@ services:
     healthCheckPath: /health
 
   # ── Frontend: Static Site (no Docker needed) ────────────────
-  - type: static_site
+  - type: web
     name: trilens-frontend
+    runtime: static
     rootDir: frontend
     buildCommand: npm ci && npm run build
     staticPublishPath: dist
