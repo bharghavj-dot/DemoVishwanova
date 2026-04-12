@@ -89,65 +89,76 @@ async def analyze_scan(
     """
     Merge features from all 3 uploads and run XGBoost classification.
     """
-    session = crud.get_session(db, req.session_id)
-    if not session:
-        raise HTTPException(status_code=404, detail="Session not found")
-    if session.user_id != user["id"]:
-        raise HTTPException(status_code=403, detail="Session belongs to another user")
+    import traceback
 
-    uploads = session.uploads or {}
-    missing = [t for t in ["eye", "tongue", "nail"] if not uploads.get(t)]
-    if missing:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Missing scan uploads: {', '.join(missing)}. Upload all 3 before analyzing.",
+    try:
+        session = crud.get_session(db, req.session_id)
+        if not session:
+            raise HTTPException(status_code=404, detail="Session not found")
+        if session.user_id != user["id"]:
+            raise HTTPException(status_code=403, detail="Session belongs to another user")
+
+        uploads = session.uploads or {}
+        missing = [t for t in ["eye", "tongue", "nail"] if not uploads.get(t)]
+        if missing:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Missing scan uploads: {', '.join(missing)}. Upload all 3 before analyzing.",
+            )
+
+        # Merge features
+        merged = {}
+        for scan_features in (session.features or {}).values():
+            merged.update(scan_features)
+
+        crud.update_session(db, session, merged_features=merged, status="analyzing")
+
+        # Run XGBoost classification
+        try:
+            result = merge_and_classify(merged)
+        except Exception as e:
+            print(f"[analyze] Classification error: {e}")
+            traceback.print_exc()
+            raise HTTPException(status_code=500, detail=f"Classification failed: {str(e)}")
+
+        # Update session
+        crud.update_session(
+            db, session,
+            top3=result["top3"],
+            priors=result["priors"],
+            top3_tuples=result["top3_tuples"],
+            status="analyzed",
         )
 
-    # Merge features
-    merged = {}
-    for scan_features in (session.features or {}).values():
-        merged.update(scan_features)
+        # Create initial report
+        top_disease = result["top3"][0]
+        from backend.pipeline.bayesian_client import generate_final_output
+        initial_output = generate_final_output(result["priors"])
 
-    crud.update_session(db, session, merged_features=merged, status="analyzing")
+        crud.create_report(
+            db,
+            session_id=req.session_id,
+            user_id=user["id"],
+            primary_disease=top_disease["disease"],
+            confidence=top_disease["probability"],
+            severity=initial_output["severity"],
+            top3=result["top3"],
+            precautions=initial_output["precautions"],
+        )
 
-    # Run XGBoost classification
-    try:
-        result = merge_and_classify(merged)
+        return AnalyzeResponse(
+            session_id=req.session_id,
+            features=merged,
+            top3=[DiseaseResult(**e) for e in result["top3"]],
+            priors=result["priors"],
+            status="analyzed",
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        raise HTTPException(status_code=500, detail=f"Classification failed: {str(e)}")
-
-    # Update session
-    crud.update_session(
-        db, session,
-        top3=result["top3"],
-        priors=result["priors"],
-        top3_tuples=result["top3_tuples"],
-        status="analyzed",
-    )
-
-    # Create initial report
-    top_disease = result["top3"][0]
-    from backend.pipeline.bayesian_client import generate_final_output
-    initial_output = generate_final_output(result["priors"])
-
-    crud.create_report(
-        db,
-        session_id=req.session_id,
-        user_id=user["id"],
-        primary_disease=top_disease["disease"],
-        confidence=top_disease["probability"],
-        severity=initial_output["severity"],
-        top3=result["top3"],
-        precautions=initial_output["precautions"],
-    )
-
-    return AnalyzeResponse(
-        session_id=req.session_id,
-        features=merged,
-        top3=[DiseaseResult(**e) for e in result["top3"]],
-        priors=result["priors"],
-        status="analyzed",
-    )
+        print(f"[analyze] UNEXPECTED ERROR: {e}")
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Analysis failed: {str(e)}")
 
 
 # ── GET /scan/session/{session_id} ───────────────────────────────────────────
