@@ -256,8 +256,7 @@ async def generate_qa_questions(
     # Check if Gemini key is available
     api_key = os.environ.get("GEMINI_API_KEY")
     if not api_key:
-        print("[llm_client] No GEMINI_API_KEY set. Using offline fallback.")
-        return _enrich_questions(_get_fallback_questions(top3), disease_name)
+        raise ValueError("GEMINI_API_KEY is not set in the environment. Please add it to the Render dashboard.")
 
     # Build prompt
     prompt = _build_gemini_prompt(disease_name, confidence)
@@ -293,15 +292,13 @@ async def generate_qa_questions(
         except json.JSONDecodeError as e:
             print(f"[llm_client] Malformed JSON from Gemini (attempt {attempt}): {e}")
             if attempt >= max_attempts:
-                print("[llm_client] Retries exhausted. Falling back to offline.")
-                return _enrich_questions(_get_fallback_questions(top3), disease_name)
+                raise ValueError(f"Gemini returned invalid JSON after {max_attempts} attempts. Raw response: {raw[:200]}")
 
         except Exception as e:
             print(f"[llm_client] Gemini API error (attempt {attempt}): {e}")
             traceback.print_exc()
             if attempt >= max_attempts:
-                print("[llm_client] Falling back to offline question bank.")
-                return _enrich_questions(_get_fallback_questions(top3), disease_name)
+                raise ValueError(f"Gemini API error: {str(e)}")
 
     # Should not reach here, but fallback just in case
     return _enrich_questions(_get_fallback_questions(top3), disease_name)
