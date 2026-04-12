@@ -4,12 +4,17 @@
 
 FROM python:3.11-slim
 
-# Install system dependencies for OpenCV, psycopg2, and general build tools
-RUN apt-get update && apt-get install -y --no-install-recommends \
+# Set non-interactive mode for apt
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
     libgl1-mesa-glx \
     libglib2.0-0 \
     libpq-dev \
     gcc \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 # Set working directory to the project root (not /app/backend)
