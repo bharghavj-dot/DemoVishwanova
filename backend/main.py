@@ -82,6 +82,19 @@ async def startup_event():
         print(f"[startup] Seed skipped or failed: {e}")
 
 
+@app.get("/test-gemini", tags=["System"])
+async def test_gemini():
+    """Temporary endpoint to debug Gemini errors directly."""
+    try:
+        from backend.pipeline.llm_client import generate_qa_questions
+        top3 = [("anaemia", 0.95)]
+        qs = await generate_qa_questions(top3)
+        return {"status": "success", "questions": qs}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+
+
 # ── Health & Root ─────────────────────────────────────────────────────────────
 @app.get("/health", response_model=HealthResponse, tags=["System"])
 async def health_check():
