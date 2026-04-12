@@ -116,7 +116,7 @@ def _call_gemini_api(prompt: str, session_id: str = "") -> str:
             temperature=0.3,
             max_output_tokens=4096,
         ),
-        request_options={"timeout": 10},
+        request_options={"timeout": 45},
     )
 
     return response.text
