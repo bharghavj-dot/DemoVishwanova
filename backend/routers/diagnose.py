@@ -130,21 +130,32 @@ async def analyze_scan(
             status="analyzed",
         )
 
-        # Create initial report
+        # Create or update report (avoid duplicate on retry)
         top_disease = result["top3"][0]
         from backend.pipeline.bayesian_client import generate_final_output
         initial_output = generate_final_output(result["priors"])
 
-        crud.create_report(
-            db,
-            session_id=req.session_id,
-            user_id=user["id"],
-            primary_disease=top_disease["disease"],
-            confidence=top_disease["probability"],
-            severity=initial_output["severity"],
-            top3=result["top3"],
-            precautions=initial_output["precautions"],
-        )
+        existing_report = crud.get_report_by_session(db, req.session_id)
+        if existing_report:
+            # Update existing report on re-analysis
+            existing_report.primary_disease = top_disease["disease"]
+            existing_report.confidence = top_disease["probability"]
+            existing_report.severity = initial_output["severity"]
+            existing_report.top3 = result["top3"]
+            existing_report.precautions = initial_output["precautions"]
+            db.commit()
+            db.refresh(existing_report)
+        else:
+            crud.create_report(
+                db,
+                session_id=req.session_id,
+                user_id=user["id"],
+                primary_disease=top_disease["disease"],
+                confidence=top_disease["probability"],
+                severity=initial_output["severity"],
+                top3=result["top3"],
+                precautions=initial_output["precautions"],
+            )
 
         return AnalyzeResponse(
             session_id=req.session_id,
