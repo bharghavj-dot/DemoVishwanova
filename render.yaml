@@ -31,7 +31,6 @@ services:
   - type: web
     name: trilens-frontend
     runtime: static
-    region: oregon
     plan: free
     rootDir: frontend
     buildCommand: npm ci && npm run build
