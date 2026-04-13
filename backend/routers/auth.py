@@ -91,6 +91,9 @@ async def register(req: RegisterRequest, db: Session = Depends(get_db)):
         role=req.role.value,
     )
 
+    # Automatically link any family member profiles waiting for this email
+    crud.link_pending_family_members(db, user)
+
     token = crud.create_token(db, user.id)
 
     return AuthResponse(

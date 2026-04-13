@@ -178,6 +178,7 @@ class FamilyMember(Base):
     status = Column(String(30), default="STABLE")
     avatar_url = Column(Text, nullable=True)
     linked_user_id = Column(String(20), nullable=True)
+    pending_email = Column(String(255), nullable=True, index=True)
     has_new_report = Column(Boolean, default=False)
 
     # Relationships

@@ -319,6 +319,7 @@ def create_family_member(
     name: str,
     relationship: str,
     linked_user_id: Optional[str] = None,
+    pending_email: Optional[str] = None,
 ) -> FamilyMember:
     """Create a new family member."""
     member = FamilyMember(
@@ -327,8 +328,22 @@ def create_family_member(
         name=name,
         relationship_=relationship,
         linked_user_id=linked_user_id,
+        pending_email=pending_email,
     )
     db.add(member)
     db.commit()
     db.refresh(member)
     return member
+
+def link_pending_family_members(db: Session, user: User):
+    """Find family members waiting for this email and link them automatically."""
+    pending_members = db.query(FamilyMember).filter(
+        FamilyMember.pending_email.ilike(user.email)
+    ).all()
+    
+    for member in pending_members:
+        member.linked_user_id = user.id
+        member.pending_email = None
+        
+    if pending_members:
+        db.commit()

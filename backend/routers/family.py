@@ -65,12 +65,15 @@ async def add_family_member(
     db: Session = Depends(get_db),
 ):
     linked_user_id = None
+    pending_email = None
     if req.email:
         linked_user = crud.get_user_by_email(db, req.email)
         if linked_user:
             if linked_user.role == "doctor":
                 raise HTTPException(status_code=400, detail="Doctors cannot be added as family members.")
             linked_user_id = linked_user.id
+        else:
+            pending_email = req.email.strip()
 
     member = crud.create_family_member(
         db,
@@ -78,6 +81,7 @@ async def add_family_member(
         name=req.name,
         relationship=req.relationship,
         linked_user_id=linked_user_id,
+        pending_email=pending_email,
     )
 
     return FamilyMemberResponse(
