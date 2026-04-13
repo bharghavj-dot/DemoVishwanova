@@ -97,3 +97,15 @@ async def health_check():
 @app.get("/", tags=["System"])
 async def root():
     return {"message": "Trilens API v1.0.0", "docs": "/docs", "health": "/health"}
+
+@app.get("/reset-db", tags=["System"])
+async def reset_db():
+    try:
+        from backend.database import Base, engine
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
+        from backend.seed import seed
+        seed()
+        return {"message": "Database successfully wiped and seeded with new doctor accounts!"}
+    except Exception as e:
+        return {"error": str(e)}
