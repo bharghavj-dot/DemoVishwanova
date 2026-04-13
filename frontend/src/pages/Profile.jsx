@@ -138,7 +138,7 @@ export default function Profile() {
         </div>
 
         {/* Cards grid */}
-        <div className="grid md:grid-cols-3 gap-6 mb-8">
+        <div className="grid md:grid-cols-2 gap-6 mb-8">
           {/* Personal Information */}
           <div className="card p-6" style={{
             background: 'rgba(255, 255, 255, 0.85)',
@@ -197,82 +197,10 @@ export default function Profile() {
             </button>
           </div>
 
-          {/* Security & Privacy */}
-          <div className="card p-6" style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(255,255,255,0.6)',
-          }}>
-            <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center mb-4">
-              <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-clinical-text mb-2">Security & Privacy</h3>
-            <p className="text-sm text-clinical-muted mb-4">HIPAA compliance audit logs, encryption keys, and right-to-be-forgotten settings.</p>
-            <button className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-500 hover:gap-3 transition-all">
-              Manage Access
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
-          </div>
+
         </div>
 
-        {/* Connected Devices + Preferences */}
-        <div className="grid md:grid-cols-[1.5fr_1fr] gap-6 mb-8">
-          <div className="card-static p-6" style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(255,255,255,0.6)',
-          }}>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h3 className="text-lg font-bold text-clinical-text">Connected Devices</h3>
-                <p className="text-xs text-clinical-muted">Active monitoring node status</p>
-              </div>
-              <span className="badge-success">3 Nodes Online</span>
-            </div>
-            <div className="grid grid-cols-3 gap-4">
-              {[
-                { name: 'Trilens Link', status: '98% Synced', icon: '🔗' },
-                { name: 'Ocular Scanner', status: 'Calibrated', icon: '👁' },
-                { name: 'Nail Bed Sensor', status: 'Monitoring', icon: '📡' },
-              ].map((device, i) => (
-                <div key={i} className="bg-clinical-bg rounded-xl p-4 text-center">
-                  <div className="w-10 h-10 mx-auto rounded-full bg-white shadow-clinical flex items-center justify-center mb-2 text-lg">
-                    {device.icon}
-                  </div>
-                  <p className="text-xs font-semibold text-clinical-text">{device.name}</p>
-                  <p className="text-[10px] text-primary-500 font-medium">{device.status}</p>
-                </div>
-              ))}
-            </div>
-          </div>
 
-          <div className="card-static p-6" style={{
-            background: 'rgba(255, 255, 255, 0.85)',
-            backdropFilter: 'blur(24px)',
-            WebkitBackdropFilter: 'blur(24px)',
-            border: '1px solid rgba(255,255,255,0.6)',
-          }}>
-            <div className="w-10 h-10 rounded-xl bg-clinical-bg flex items-center justify-center mb-4">
-              <svg className="w-5 h-5 text-clinical-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-              </svg>
-            </div>
-            <h3 className="text-lg font-bold text-clinical-text mb-2">Preferences</h3>
-            <p className="text-sm text-clinical-muted mb-4">Adjust notification frequency, language (English/Hindi), and UI accessibility.</p>
-            <button className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-primary-500 hover:gap-3 transition-all">
-              Open Settings
-              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-              </svg>
-            </button>
-          </div>
-        </div>
 
         {/* Records modal */}
         {showRecords && records && (
