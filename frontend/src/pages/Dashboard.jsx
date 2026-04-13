@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import API from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
+import stethImg from '../steth.jpeg';
 
 export default function Dashboard() {
   const { state, dispatch } = useApp();
@@ -95,17 +96,61 @@ export default function Dashboard() {
 
   if (loading) {
     return (
-      <div className="min-h-[60vh] flex items-center justify-center">
-        <LoadingSpinner size="lg" text="Loading dashboard..." />
+      <div
+        style={{
+          minHeight: 'calc(100vh - 64px)',
+          backgroundImage: `url(${stethImg})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center',
+          backgroundAttachment: 'fixed',
+          position: 'relative',
+        }}
+      >
+        <div style={{
+          position: 'absolute', inset: 0,
+          background: 'rgba(230, 240, 240, 0.65)',
+          backdropFilter: 'blur(8px)',
+          WebkitBackdropFilter: 'blur(8px)',
+          pointerEvents: 'none',
+          zIndex: 0,
+        }} />
+        <div style={{ position: 'relative', zIndex: 1 }} className="min-h-[60vh] flex items-center justify-center">
+          <LoadingSpinner size="lg" text="Loading dashboard..." />
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-clinical-bg">
-      {/* Hero Greeting — animated entry */}
-      <div className="bg-gradient-to-r from-primary-50 via-clinical-bg to-white py-12 px-6">
-        <div className="max-w-7xl mx-auto">
+    <div
+      style={{
+        minHeight: 'calc(100vh - 64px)',
+        backgroundImage: `url(${stethImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        position: 'relative',
+      }}
+    >
+      {/* Semi-transparent overlay to soften the image and provide a denser glass effect */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(230, 240, 240, 0.65)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }}>
+        {/* Hero Greeting — animated entry */}
+        <div style={{ 
+          background: 'rgba(255, 255, 255, 0.45)', 
+          backdropFilter: 'blur(18px)',
+          WebkitBackdropFilter: 'blur(18px)',
+          borderBottom: '1px solid rgba(255,255,255,0.5)',
+        }} className="py-12 px-6">
+          <div className="max-w-7xl mx-auto">
           <h1 className="text-4xl md:text-5xl font-bold text-gradient mb-3 animate-fade-in-up">
             {getGreeting()}, {state.user?.full_name?.split(' ')[0] || 'User'}.
           </h1>
@@ -129,14 +174,19 @@ export default function Dashboard() {
             )}
           </div>
         </div>
-      </div>
+        </div>
 
-      <div className="max-w-7xl mx-auto px-6 py-10">
+        <div className="max-w-7xl mx-auto px-6 py-10">
         {/* Diagnostic Scan Modules — staggered reveal */}
         <h2 className="section-title mb-6 reveal">Diagnostic Scan Modules</h2>
         <div className="grid md:grid-cols-3 gap-6 mb-12 stagger-children">
           {modules.map((mod, i) => (
-            <div key={i} className="card p-8 group cursor-pointer">
+            <div key={i} className="card p-8 group cursor-pointer" style={{
+              background: 'rgba(255, 255, 255, 0.8)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1px solid rgba(255,255,255,0.6)',
+            }}>
               <div className="mb-5">{mod.icon}</div>
               <h3 className={`text-xl font-bold ${mod.color} mb-2 group-hover:translate-x-1 transition-transform duration-300`}>{mod.title}</h3>
               <p className="text-sm text-clinical-muted mb-6">{mod.desc}</p>
@@ -163,7 +213,13 @@ export default function Dashboard() {
                   key={i}
                   to={report.is_final ? `/report/${report.session_id}/final` : `/report/${report.session_id}`}
                   className="card-static p-5 hover:shadow-clinical-lg hover:-translate-y-1 transition-all duration-400 group"
-                  style={{ transitionTimingFunction: 'cubic-bezier(.25,.46,.45,.94)' }}
+                  style={{ 
+                    transitionTimingFunction: 'cubic-bezier(.25,.46,.45,.94)',
+                    background: 'rgba(255, 255, 255, 0.8)',
+                    backdropFilter: 'blur(24px)',
+                    WebkitBackdropFilter: 'blur(24px)',
+                    border: '1px solid rgba(255,255,255,0.6)',
+                  }}
                 >
                   <div className="flex items-center justify-between mb-3">
                     <span className={`badge ${report.severity === 'Mild' ? 'badge-success' : report.severity === 'Moderate' ? 'badge-warning' : 'badge-danger'}`}>
@@ -187,5 +243,6 @@ export default function Dashboard() {
         )}
       </div>
     </div>
-  );
+  </div>
+);
 }

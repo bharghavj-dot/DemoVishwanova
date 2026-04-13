@@ -30,13 +30,17 @@ print(f"[database] Connecting to: {DATABASE_URL.split('@')[-1] if '@' in DATABAS
 
 # ── Engine & Session ──────────────────────────────────────────────────────────
 
-engine = create_engine(
-    DATABASE_URL,
-    pool_size=10,
-    max_overflow=20,
-    pool_pre_ping=True,  # reconnect stale connections
-    echo=False,          # set True for SQL debug logging
-)
+engine_kwargs = {
+    "pool_pre_ping": True,
+    "echo": False,
+}
+if DATABASE_URL.startswith("sqlite"):
+    engine_kwargs["connect_args"] = {"check_same_thread": False}
+else:
+    engine_kwargs["pool_size"] = 10
+    engine_kwargs["max_overflow"] = 20
+
+engine = create_engine(DATABASE_URL, **engine_kwargs)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

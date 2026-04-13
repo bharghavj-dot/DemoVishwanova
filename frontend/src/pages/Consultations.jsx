@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import API from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
+import stethImg from '../steth.jpeg';
 
 export default function Consultations() {
   const { state, dispatch } = useApp();
@@ -43,8 +44,27 @@ export default function Consultations() {
   };
 
   return (
-    <div className="min-h-screen bg-clinical-bg">
-      <div className="max-w-7xl mx-auto px-6 py-8 animate-fade-in">
+    <div
+      style={{
+        minHeight: 'calc(100vh - 64px)',
+        backgroundImage: `url(${stethImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        position: 'relative',
+      }}
+    >
+      {/* Semi-transparent overlay to soften the image and provide a denser glass effect */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(230, 240, 240, 0.65)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }} className="max-w-7xl mx-auto px-6 py-8 animate-fade-in">
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gradient mb-2">Clinical Consultations</h1>
@@ -59,9 +79,16 @@ export default function Consultations() {
               onClick={() => handleCategoryChange(cat)}
               className={`px-5 py-2.5 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
                 activeCategory === cat
-                  ? 'bg-white shadow-clinical border border-primary-200 text-clinical-text'
-                  : 'bg-transparent border border-clinical-border text-clinical-muted hover:border-primary-200'
+                  ? 'border-primary-200 text-clinical-text'
+                  : 'border-white/40 text-clinical-muted hover:border-primary-200'
               }`}
+              style={{
+                background: activeCategory === cat ? 'rgba(255, 255, 255, 0.85)' : 'rgba(255, 255, 255, 0.45)',
+                backdropFilter: 'blur(18px)',
+                WebkitBackdropFilter: 'blur(18px)',
+                border: activeCategory === cat ? '1px solid rgba(0, 212, 170, 0.4)' : '1px solid rgba(255,255,255,0.6)',
+                boxShadow: activeCategory === cat ? '0 4px 12px rgba(0, 0, 0, 0.05)' : 'none',
+              }}
             >
               {cat}
             </button>
@@ -76,7 +103,17 @@ export default function Consultations() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {doctors.map((doc, i) => (
-              <div key={i} className="card-static p-6 animate-slide-up" style={{ animationDelay: `${i * 0.1}s` }}>
+              <div 
+                key={i} 
+                className="card-static p-6 animate-slide-up" 
+                style={{ 
+                  animationDelay: `${i * 0.1}s`,
+                  background: 'rgba(255, 255, 255, 0.8)',
+                  backdropFilter: 'blur(24px)',
+                  WebkitBackdropFilter: 'blur(24px)',
+                  border: '1px solid rgba(255,255,255,0.7)',
+                }}
+              >
                 <div className="flex items-start gap-4 mb-4">
                   <div className="w-20 h-20 rounded-2xl bg-clinical-bg flex items-center justify-center text-2xl font-bold text-primary-500 flex-shrink-0">
                     {doc.name?.split(' ').map(n => n[0]).join('').slice(0, 2)}

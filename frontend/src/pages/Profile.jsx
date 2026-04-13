@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import API from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
+import stethImg from '../steth.jpeg';
 
 export default function Profile() {
   const { state, dispatch } = useApp();
@@ -70,10 +71,34 @@ export default function Profile() {
   };
 
   return (
-    <div className="min-h-screen bg-clinical-bg">
-      <div className="max-w-6xl mx-auto px-6 py-8 animate-fade-in">
+    <div
+      style={{
+        minHeight: 'calc(100vh - 64px)',
+        backgroundImage: `url(${stethImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        position: 'relative',
+      }}
+    >
+      {/* Semi-transparent overlay to soften the image and provide a denser glass effect */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(230, 240, 240, 0.65)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+
+      <div style={{ position: 'relative', zIndex: 1 }} className="max-w-6xl mx-auto px-6 py-8 animate-fade-in">
         {/* Profile header card */}
-        <div className="card-static p-8 mb-8">
+        <div className="card-static p-8 mb-8" style={{
+          background: 'rgba(255, 255, 255, 0.85)',
+          backdropFilter: 'blur(24px)',
+          WebkitBackdropFilter: 'blur(24px)',
+          border: '1px solid rgba(255,255,255,0.6)',
+        }}>
           <div className="flex flex-col md:flex-row items-center gap-6">
             <div className="relative">
               <div className="w-28 h-28 rounded-2xl bg-gradient-to-br from-primary-300 to-primary-500 flex items-center justify-center text-4xl font-bold text-white">
@@ -115,7 +140,12 @@ export default function Profile() {
         {/* Cards grid */}
         <div className="grid md:grid-cols-3 gap-6 mb-8">
           {/* Personal Information */}
-          <div className="card p-6">
+          <div className="card p-6" style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.6)',
+          }}>
             <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center mb-4">
               <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -146,7 +176,12 @@ export default function Profile() {
           </div>
 
           {/* Clinical Records */}
-          <div className="card p-6">
+          <div className="card p-6" style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.6)',
+          }}>
             <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center mb-4">
               <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -163,7 +198,12 @@ export default function Profile() {
           </div>
 
           {/* Security & Privacy */}
-          <div className="card p-6">
+          <div className="card p-6" style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.6)',
+          }}>
             <div className="w-10 h-10 rounded-xl bg-primary-50 flex items-center justify-center mb-4">
               <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -182,7 +222,12 @@ export default function Profile() {
 
         {/* Connected Devices + Preferences */}
         <div className="grid md:grid-cols-[1.5fr_1fr] gap-6 mb-8">
-          <div className="card-static p-6">
+          <div className="card-static p-6" style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.6)',
+          }}>
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h3 className="text-lg font-bold text-clinical-text">Connected Devices</h3>
@@ -207,7 +252,12 @@ export default function Profile() {
             </div>
           </div>
 
-          <div className="card-static p-6">
+          <div className="card-static p-6" style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.6)',
+          }}>
             <div className="w-10 h-10 rounded-xl bg-clinical-bg flex items-center justify-center mb-4">
               <svg className="w-5 h-5 text-clinical-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
@@ -226,7 +276,12 @@ export default function Profile() {
 
         {/* Records modal */}
         {showRecords && records && (
-          <div className="card-static p-6 mb-8 animate-scale-in">
+          <div className="card-static p-6 mb-8 animate-scale-in" style={{
+            background: 'rgba(255, 255, 255, 0.85)',
+            backdropFilter: 'blur(24px)',
+            WebkitBackdropFilter: 'blur(24px)',
+            border: '1px solid rgba(255,255,255,0.6)',
+          }}>
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-bold text-clinical-text">Clinical Records Vault</h3>
               <button onClick={() => setShowRecords(false)} className="text-clinical-muted hover:text-primary-500">

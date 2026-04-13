@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import API from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
+import stethImg from '../steth.jpeg';
 
 /* ── Scanning Animation Overlay ── 
    A dramatic, highly visible scanning effect over uploaded images.
@@ -65,8 +66,8 @@ function ScanningOverlay({ imageSrc, scanType }) {
           boxShadow: isDone
             ? '0 0 20px rgba(34, 197, 94, 0.3)'
             : isExtracting
-            ? '0 0 25px rgba(212, 160, 23, 0.3)'
-            : '0 0 30px rgba(0, 212, 170, 0.25), 0 0 60px rgba(0, 212, 170, 0.1)',
+              ? '0 0 25px rgba(212, 160, 23, 0.3)'
+              : '0 0 30px rgba(0, 212, 170, 0.25), 0 0 60px rgba(0, 212, 170, 0.1)',
         }}
       >
         {/* The uploaded image */}
@@ -183,8 +184,8 @@ function ScanningOverlay({ imageSrc, scanType }) {
                 background: isDone
                   ? 'linear-gradient(90deg, #22C55E, #4ade80)'
                   : isExtracting
-                  ? 'linear-gradient(90deg, #D4A017, #f0c040)'
-                  : 'linear-gradient(90deg, #00D4AA, #2196f3)',
+                    ? 'linear-gradient(90deg, #D4A017, #f0c040)'
+                    : 'linear-gradient(90deg, #00D4AA, #2196f3)',
               }}
             />
           </div>
@@ -233,15 +234,21 @@ export default function Scan() {
   }, []);
 
   const tabs = [
-    { key: 'eye', label: 'EYE', icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
-    )},
-    { key: 'tongue', label: 'TONGUE', icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
-    )},
-    { key: 'nail', label: 'NAIL', icon: (
-      <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
-    )},
+    {
+      key: 'eye', label: 'EYE', icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
+      )
+    },
+    {
+      key: 'tongue', label: 'TONGUE', icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" /></svg>
+      )
+    },
+    {
+      key: 'nail', label: 'NAIL', icon: (
+        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 21a4 4 0 01-4-4V5a2 2 0 012-2h4a2 2 0 012 2v12a4 4 0 01-4 4zm0 0h12a2 2 0 002-2v-4a2 2 0 00-2-2h-2.343M11 7.343l1.657-1.657a2 2 0 012.828 0l2.829 2.829a2 2 0 010 2.828l-8.486 8.485M7 17h.01" /></svg>
+      )
+    },
   ];
 
   const allUploaded = state.uploadsComplete.eye && state.uploadsComplete.tongue && state.uploadsComplete.nail;
@@ -333,13 +340,47 @@ export default function Scan() {
   ];
 
   return (
-    <div className="min-h-screen bg-clinical-bg">
-      <div className="max-w-5xl mx-auto px-6 py-8">
-        {/* ═══ UPLOAD AREA — full width ═══ */}
+    <div
+      style={{
+        minHeight: 'calc(100vh - 64px)',
+        backgroundImage: `url(${stethImg})`,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundAttachment: 'fixed',
+        position: 'relative',
+      }}
+    >
+      {/* Semi-transparent overlay to soften the image and provide a denser glass effect */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        background: 'rgba(230, 240, 240, 0.65)',
+        backdropFilter: 'blur(8px)',
+        WebkitBackdropFilter: 'blur(8px)',
+        pointerEvents: 'none',
+        zIndex: 0,
+      }} />
+      <div className="py-6" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', position: 'relative', zIndex: 1 }}>
+        {/* 80% width container — centres both upload box and scan cards */}
+        <div style={{ width: '80vw' }}>
+
+        {/* ═══ UPLOAD AREA — 60% of viewport height min ═══ */}
         <div className="animate-fade-in-up">
-          <div className="card-static p-8 border-2 border-dashed border-clinical-border relative overflow-hidden hover:border-primary-200 transition-colors duration-400" style={{ minHeight: 400 }}>
+          <div
+            style={{
+              minHeight: '60vh',
+              display: 'flex',
+              flexDirection: 'column',
+              background: 'rgba(255, 255, 255, 0.85)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)',
+              border: '1.5px dashed rgba(27, 77, 75, 0.4)',
+              borderRadius: '16px',
+              boxShadow: '0 8px 32px rgba(27, 77, 75, 0.12), inset 0 1px 0 rgba(255,255,255,0.8)',
+            }}
+            className="p-8 hover:border-primary-200 transition-colors duration-400"
+          >
             {/* Status bar */}
-            <div className="mb-8">
+            <div className="mb-6">
               <p className="text-[10px] uppercase tracking-[0.2em] text-clinical-muted font-mono">
                 Source: {previews[activeTab] ? 'IMAGE LOADED' : 'WAITING FOR INPUT...'}
               </p>
@@ -348,7 +389,7 @@ export default function Scan() {
               </p>
             </div>
 
-            <div className="flex flex-col items-center justify-center text-center">
+            <div className="flex flex-col items-center justify-center text-center" style={{ flex: 1 }}>
               {/* Show scanning animation when uploading with preview available */}
               {isScanning && previews[activeTab] ? (
                 <div className="animate-scale-in">
@@ -374,13 +415,13 @@ export default function Scan() {
                 </div>
               ) : (
                 <div className="animate-fade-in">
-                  <div className="w-20 h-20 rounded-full bg-clinical-bg flex items-center justify-center mb-4 mx-auto hover:bg-primary-50 transition-colors duration-300">
-                    <svg className="w-10 h-10 text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <div className="w-24 h-24 rounded-full bg-clinical-bg flex items-center justify-center mb-6 mx-auto hover:bg-primary-50 transition-colors duration-300">
+                    <svg className="w-12 h-12 text-primary-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                     </svg>
                   </div>
-                  <h3 className="text-xl font-bold text-clinical-text mb-2">Ready for Analysis</h3>
-                  <p className="text-sm text-clinical-muted mb-6">Select a high-resolution diagnostic image to begin ML extraction</p>
+                  <h3 className="text-2xl font-bold text-clinical-text mb-3">Ready for Analysis</h3>
+                  <p className="text-base text-clinical-muted mb-6">Select a high-resolution diagnostic image to begin ML extraction</p>
                 </div>
               )}
 
@@ -410,8 +451,8 @@ export default function Scan() {
           </div>
         </div>
 
-        {/* ═══ SCAN TYPE CARDS — 3 columns below ═══ */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
+        {/* ═══ SCAN TYPE CARDS — 3 columns ═══ */}
+        <div className="grid grid-cols-3 gap-5 mt-5">
           {scanCards.map((card) => {
             const isActive = activeTab === card.key;
             const isDone = state.uploadsComplete[card.key];
@@ -421,12 +462,27 @@ export default function Scan() {
               <button
                 key={card.key}
                 onClick={() => setActiveTab(card.key)}
-                className={`relative card-static p-6 text-center transition-all duration-400 group ${
-                  isActive
-                    ? 'border-2 border-primary-300 shadow-clinical-lg'
-                    : 'border border-clinical-border hover:shadow-clinical-lg hover:border-primary-200'
-                }`}
-                style={{ transitionTimingFunction: 'cubic-bezier(.25,.46,.45,.94)' }}
+                className={`relative text-center transition-all duration-400 group ${isActive
+                  ? 'border-2 border-primary-300'
+                  : 'border border-white/50 hover:border-primary-200'
+                  }`}
+                style={{
+                  transitionTimingFunction: 'cubic-bezier(.25,.46,.45,.94)',
+                  minHeight: '200px',
+                  width: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  background: isActive ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.8)',
+                  backdropFilter: 'blur(24px)',
+                  WebkitBackdropFilter: 'blur(24px)',
+                  borderRadius: '16px',
+                  boxShadow: isActive
+                    ? '0 8px 32px rgba(27,77,75,0.2), inset 0 1px 0 rgba(255,255,255,0.9)'
+                    : '0 4px 20px rgba(27,77,75,0.1), inset 0 1px 0 rgba(255,255,255,0.7)',
+                  padding: '2rem',
+                }}
               >
                 {/* Status badge — top right */}
                 <div className="absolute top-3 right-3">
@@ -449,23 +505,21 @@ export default function Scan() {
                 </div>
 
                 {/* Icon */}
-                <div className={`w-14 h-14 mx-auto rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${
-                  isActive
-                    ? 'bg-primary-50 text-primary-500 scale-110'
-                    : 'bg-clinical-bg text-clinical-muted group-hover:bg-primary-50 group-hover:text-primary-500'
-                }`}>
+                <div className={`w-16 h-16 mx-auto rounded-2xl flex items-center justify-center mb-4 transition-all duration-300 ${isActive
+                  ? 'bg-primary-50 text-primary-500 scale-110'
+                  : 'bg-clinical-bg text-clinical-muted group-hover:bg-primary-50 group-hover:text-primary-500'
+                  }`}>
                   {card.icon}
                 </div>
 
                 {/* Label */}
-                <h3 className={`text-base font-bold uppercase tracking-wider mb-2 transition-colors duration-300 ${
-                  isActive ? 'text-primary-500' : 'text-clinical-text'
-                }`}>
+                <h3 className={`text-base font-bold uppercase tracking-widest mb-2 transition-colors duration-300 ${isActive ? 'text-primary-500' : 'text-clinical-text'
+                  }`}>
                   {card.label}
                 </h3>
 
                 {/* Description */}
-                <p className="text-xs text-clinical-muted leading-relaxed">
+                <p className="text-sm text-clinical-muted leading-relaxed max-w-[220px] mx-auto">
                   {card.desc}
                 </p>
               </button>
@@ -493,6 +547,7 @@ export default function Scan() {
             </button>
           </div>
         )}
+        </div>{/* end 75vw container */}
       </div>
     </div>
   );
