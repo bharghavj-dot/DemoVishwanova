@@ -13,6 +13,7 @@ sqlalchemy
 
 # ── Auth & Config ─────────────────────────────────────────────
 python-dotenv
+resend
 pydantic
 itsdangerous
 
