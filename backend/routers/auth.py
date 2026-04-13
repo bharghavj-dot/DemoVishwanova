@@ -8,7 +8,7 @@ Matches Login.png and Create Account.png pages.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, status, BackgroundTasks
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.orm import Session
 
@@ -165,81 +165,95 @@ async def get_me(user: dict = Depends(get_current_user_dep)):
 
 # ── POST /auth/forgot-password ────────────────────────────────────────────
 
+def _send_reset_email_task(user_email: str, full_name: str, reset_url: str):
+    """Background task to handle the blocking SMTP connection"""
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    smtp_email = os.environ.get("SMTP_EMAIL", "")
+    smtp_password = os.environ.get("SMTP_PASSWORD", "")
+
+    if smtp_email and smtp_password:
+        try:
+            msg = MIMEMultipart("alternative")
+            msg["Subject"] = "Reset Your Trilens Password"
+            msg["From"] = f"Trilens <{smtp_email}>"
+            msg["To"] = user_email
+
+            html_body = f"""
+            <div style="font-family: 'Inter', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; background: #f8fafa;">
+              <div style="background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e8eded;">
+                <div style="text-align: center; margin-bottom: 32px;">
+                  <div style="display: inline-block; width: 56px; height: 56px; background: linear-gradient(135deg, #1B4D4B, #00D4AA); border-radius: 14px; line-height: 56px; color: white; font-size: 24px; font-weight: bold;">T</div>
+                </div>
+                <h1 style="color: #1A2C2C; font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 8px;">Reset Your Password</h1>
+                <p style="color: #6B8A8A; font-size: 14px; text-align: center; margin: 0 0 32px; line-height: 1.6;">
+                  Hi <strong>{full_name}</strong>, we received a request to reset your access key. Click the button below to set a new password.
+                </p>
+                <div style="text-align: center; margin-bottom: 32px;">
+                  <a href="{reset_url}" style="display: inline-block; background: linear-gradient(135deg, #1B4D4B, #00D4AA); color: white; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-size: 15px; font-weight: 600; letter-spacing: 0.5px;">
+                    Reset Password
+                  </a>
+                </div>
+                <p style="color: #9BB0B0; font-size: 12px; text-align: center; margin: 0 0 16px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
+                <hr style="border: none; border-top: 1px solid #e8eded; margin: 24px 0;" />
+                <p style="color: #b0c4c4; font-size: 11px; text-align: center; margin: 0;">Trilens — Precision Clinical Diagnostics</p>
+              </div>
+            </div>
+            """
+
+            text_body = f"Hi {full_name},\n\nReset your password here: {reset_url}\n\nThis link expires in 1 hour.\n\n— Trilens"
+
+            msg.attach(MIMEText(text_body, "plain"))
+            msg.attach(MIMEText(html_body, "html"))
+
+            # Switch from port 465 (SSL) to 587 (STARTTLS)
+            # This often bypasses 'Network is unreachable' on free cloud tiers and IPv6 routing errors
+            with smtplib.SMTP("smtp.gmail.com", 587) as server:
+                server.ehlo()
+                server.starttls()
+                server.login(smtp_email, smtp_password)
+                server.sendmail(smtp_email, user_email, msg.as_string())
+
+            print(f"[auth] Password reset email sent to {user_email}")
+
+        except Exception as e:
+            print(f"[auth] Failed to send email: {e}")
+            # Fallback to console
+            print(f"[auth] Reset URL: {reset_url}")
+    else:
+        # No SMTP configured — print to console
+        print("\n" + "=" * 60)
+        print("PASSWORD RESET LINK (no SMTP configured)")
+        print(f"  User: {full_name} ({user_email})")
+        print(f"  URL:  {reset_url}")
+        print(f"  Token expires in 1 hour.")
+        print("=" * 60 + "\n")
+
+
 @router.post("/forgot-password")
-async def forgot_password(req: dict, db: Session = Depends(get_db)):
+async def forgot_password(req: dict, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
     """
     Request a password reset link.
     Sends a real email via Gmail SMTP if configured, otherwise prints to console.
     Always returns success to prevent email enumeration.
     """
     import os
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
 
     email = req.get("email", "").strip()
     user = crud.get_user_by_email(db, email)
 
     if user:
         token = crud.create_password_reset_token(db, user.id)
-        reset_url = f"http://localhost:5173/reset-password?token={token}"
+        
+        # Use FRONTEND_URL env var if available, otherwise fallback
+        frontend_url = os.environ.get("FRONTEND_URL", "http://localhost:5173").rstrip('/')
+        reset_url = f"{frontend_url}/reset-password?token={token}"
 
-        smtp_email = os.environ.get("SMTP_EMAIL", "")
-        smtp_password = os.environ.get("SMTP_PASSWORD", "")
-
-        if smtp_email and smtp_password:
-            # Send real email via Gmail SMTP
-            try:
-                msg = MIMEMultipart("alternative")
-                msg["Subject"] = "Reset Your Trilens Password"
-                msg["From"] = f"Trilens <{smtp_email}>"
-                msg["To"] = user.email
-
-                html_body = f"""
-                <div style="font-family: 'Inter', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; background: #f8fafa;">
-                  <div style="background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e8eded;">
-                    <div style="text-align: center; margin-bottom: 32px;">
-                      <div style="display: inline-block; width: 56px; height: 56px; background: linear-gradient(135deg, #1B4D4B, #00D4AA); border-radius: 14px; line-height: 56px; color: white; font-size: 24px; font-weight: bold;">T</div>
-                    </div>
-                    <h1 style="color: #1A2C2C; font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 8px;">Reset Your Password</h1>
-                    <p style="color: #6B8A8A; font-size: 14px; text-align: center; margin: 0 0 32px; line-height: 1.6;">
-                      Hi <strong>{user.full_name}</strong>, we received a request to reset your access key. Click the button below to set a new password.
-                    </p>
-                    <div style="text-align: center; margin-bottom: 32px;">
-                      <a href="{reset_url}" style="display: inline-block; background: linear-gradient(135deg, #1B4D4B, #00D4AA); color: white; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-size: 15px; font-weight: 600; letter-spacing: 0.5px;">
-                        Reset Password
-                      </a>
-                    </div>
-                    <p style="color: #9BB0B0; font-size: 12px; text-align: center; margin: 0 0 16px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
-                    <hr style="border: none; border-top: 1px solid #e8eded; margin: 24px 0;" />
-                    <p style="color: #b0c4c4; font-size: 11px; text-align: center; margin: 0;">Trilens — Precision Clinical Diagnostics</p>
-                  </div>
-                </div>
-                """
-
-                text_body = f"Hi {user.full_name},\n\nReset your password here: {reset_url}\n\nThis link expires in 1 hour.\n\n— Trilens"
-
-                msg.attach(MIMEText(text_body, "plain"))
-                msg.attach(MIMEText(html_body, "html"))
-
-                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-                    server.login(smtp_email, smtp_password)
-                    server.sendmail(smtp_email, user.email, msg.as_string())
-
-                print(f"[auth] Password reset email sent to {user.email}")
-
-            except Exception as e:
-                print(f"[auth] Failed to send email: {e}")
-                # Fallback to console
-                print(f"[auth] Reset URL: {reset_url}")
-        else:
-            # No SMTP configured — print to console
-            print("\n" + "=" * 60)
-            print("PASSWORD RESET LINK (no SMTP configured)")
-            print(f"  User: {user.full_name} ({user.email})")
-            print(f"  URL:  {reset_url}")
-            print(f"  Token expires in 1 hour.")
-            print("=" * 60 + "\n")
+        # Delegate email sending to background task immediately
+        background_tasks.add_task(_send_reset_email_task, user.email, user.full_name, reset_url)
 
     return {"message": "If an account with that email exists, a password reset link has been sent."}
 
