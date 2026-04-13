@@ -19,7 +19,7 @@ from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 DATABASE_URL = os.environ.get(
     "DATABASE_URL",
-    "postgresql://postgres:2295@localhost:5432/trilens",
+    "sqlite:///./trilens.db",
 )
 
 # Render gives postgres:// but SQLAlchemy requires postgresql://

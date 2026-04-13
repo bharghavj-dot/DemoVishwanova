@@ -60,33 +60,40 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-clinical-bg via-white to-primary-50 flex flex-col">
-      <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="w-full max-w-lg animate-fade-in">
-          <div className="card-static p-8 md:p-10">
-            <div className="text-center mb-8">
+    <div className="min-h-screen bg-gradient-to-br from-clinical-bg via-white to-primary-50 flex flex-col relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 -left-20 w-80 h-80 bg-primary-100/30 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-1/4 -right-20 w-96 h-96 bg-accent-teal/10 rounded-full blur-3xl animate-float-delayed"></div>
+      </div>
+
+      <div className="flex-1 flex items-center justify-center px-4 py-12 relative z-10">
+        <div className="w-full max-w-lg">
+          <div className="card-static p-8 md:p-10 animate-fade-in-up">
+            <div className="text-center mb-8 animate-stagger-1">
               <h1 className="text-3xl font-bold text-clinical-text">Welcome Back</h1>
               <p className="text-clinical-muted mt-2">Enter the Clinical Sanctuary</p>
             </div>
 
-            {/* Role Selector */}
-            <div className="grid grid-cols-3 gap-3 mb-8">
+            {/* Role Selector with animated transitions */}
+            <div className="grid grid-cols-3 gap-3 mb-8 animate-stagger-2">
               {roleOptions.map((r) => (
                 <button
                   key={r.value}
                   onClick={() => setRole(r.value)}
-                  className={`relative p-4 rounded-xl border-2 transition-all duration-300 text-center group ${
+                  className={`relative p-4 rounded-xl border-2 transition-all duration-400 text-center group ${
                     role === r.value
-                      ? 'border-primary-500 bg-white shadow-clinical'
-                      : 'border-clinical-border bg-clinical-subtle hover:border-primary-200'
+                      ? 'border-primary-500 bg-white shadow-clinical scale-[1.02]'
+                      : 'border-clinical-border bg-clinical-subtle hover:border-primary-200 hover:scale-[1.01]'
                   }`}
+                  style={{ transitionTimingFunction: 'cubic-bezier(.25,.46,.45,.94)' }}
                 >
-                  <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center mb-2 transition-colors ${
-                    role === r.value ? 'bg-primary-50 text-primary-500' : 'bg-gray-100 text-clinical-muted'
+                  <div className={`w-10 h-10 mx-auto rounded-full flex items-center justify-center mb-2 transition-all duration-300 ${
+                    role === r.value ? 'bg-primary-50 text-primary-500 scale-110' : 'bg-gray-100 text-clinical-muted'
                   }`}>
                     {r.icon}
                   </div>
-                  <p className={`text-xs font-bold uppercase tracking-wider ${
+                  <p className={`text-xs font-bold uppercase tracking-wider transition-colors duration-300 ${
                     role === r.value ? 'text-primary-500' : 'text-clinical-muted'
                   }`}>{r.label}</p>
                   <p className="text-[10px] text-clinical-muted mt-0.5">{r.desc}</p>
@@ -94,12 +101,12 @@ export default function Login() {
               ))}
             </div>
 
-            {/* Login Form */}
-            <form onSubmit={handleLogin} className="space-y-5">
+            {/* Login Form with interactive inputs */}
+            <form onSubmit={handleLogin} className="space-y-5 animate-stagger-3">
               <div>
                 <label className="label-text">Medical Email</label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-clinical-muted">
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-clinical-muted group-focus-within:text-primary-500 transition-colors duration-300">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
                     </svg>
@@ -118,8 +125,8 @@ export default function Login() {
 
               <div>
                 <label className="label-text">Access Key</label>
-                <div className="relative">
-                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-clinical-muted">
+                <div className="relative group">
+                  <div className="absolute left-4 top-1/2 -translate-y-1/2 text-clinical-muted group-focus-within:text-primary-500 transition-colors duration-300">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
@@ -136,7 +143,7 @@ export default function Login() {
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 text-clinical-muted hover:text-primary-500 transition-colors"
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-clinical-muted hover:text-primary-500 transition-all duration-300 hover:scale-110"
                   >
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       {showPassword ? (
@@ -153,11 +160,11 @@ export default function Login() {
               </div>
 
               <div className="flex items-center justify-between text-sm">
-                <label className="flex items-center gap-2 text-clinical-muted cursor-pointer">
-                  <input type="checkbox" className="rounded border-clinical-border text-primary-500 focus:ring-primary-300" />
-                  Keep session secure
+                <label className="flex items-center gap-2 text-clinical-muted cursor-pointer group">
+                  <input type="checkbox" className="rounded border-clinical-border text-primary-500 focus:ring-primary-300 transition-all duration-200" />
+                  <span className="group-hover:text-clinical-text transition-colors duration-200">Keep session secure</span>
                 </label>
-                <button type="button" className="text-primary-500 font-medium hover:underline text-sm">
+                <button type="button" className="text-primary-500 font-medium hover:underline text-sm transition-all duration-200 hover:text-primary-400">
                   Forgot Access Key?
                 </button>
               </div>
@@ -173,7 +180,7 @@ export default function Login() {
                 ) : (
                   <>
                     Sign in as {role.charAt(0).toUpperCase() + role.slice(1)}
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <svg className="w-5 h-5 group-hover:translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
                     </svg>
                   </>
@@ -182,7 +189,7 @@ export default function Login() {
             </form>
 
             {/* Divider */}
-            <div className="relative my-8">
+            <div className="relative my-8 animate-stagger-4">
               <div className="absolute inset-0 flex items-center">
                 <div className="w-full border-t border-clinical-border"></div>
               </div>
@@ -191,8 +198,8 @@ export default function Login() {
               </div>
             </div>
 
-            {/* Demo Buttons */}
-            <div className="flex gap-3 justify-center">
+            {/* Demo Buttons with stagger */}
+            <div className="flex gap-3 justify-center animate-stagger-5">
               {[
                 { role: 'patient', label: 'Patient Demo', letter: 'P', color: 'bg-primary-500' },
                 { role: 'doctor', label: 'Doctor Demo', letter: 'D', color: 'bg-primary-400' },
@@ -202,14 +209,14 @@ export default function Login() {
                   key={demo.role}
                   onClick={() => handleDemoLogin(demo.role)}
                   disabled={!!demoLoading}
-                  className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-clinical-border bg-white hover:bg-clinical-subtle transition-all hover:shadow-clinical text-sm"
+                  className="flex items-center gap-2 px-4 py-2.5 rounded-full border border-clinical-border bg-white hover:bg-clinical-subtle transition-all duration-300 hover:shadow-clinical hover:-translate-y-0.5 text-sm"
                   id={`demo-${demo.role}`}
                 >
                   {demoLoading === demo.role ? (
                     <LoadingSpinner size="sm" />
                   ) : (
                     <>
-                      <span className={`w-6 h-6 rounded-full ${demo.color} text-white flex items-center justify-center text-xs font-bold`}>
+                      <span className={`w-6 h-6 rounded-full ${demo.color} text-white flex items-center justify-center text-xs font-bold transition-transform duration-300 hover:scale-110`}>
                         {demo.letter}
                       </span>
                       {demo.label}
@@ -220,11 +227,11 @@ export default function Login() {
             </div>
 
             {/* Register link */}
-            <div className="text-center mt-8 pt-6 border-t border-clinical-border">
+            <div className="text-center mt-8 pt-6 border-t border-clinical-border animate-stagger-6">
               <p className="text-sm text-clinical-muted mb-3">Don't have an account yet?</p>
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 text-primary-500 font-semibold hover:gap-3 transition-all"
+                className="inline-flex items-center gap-2 text-primary-500 font-semibold hover:gap-3 transition-all duration-300"
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
@@ -237,10 +244,10 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Security badges */}
-          <div className="flex items-center justify-center gap-6 mt-6">
+          {/* Security badges with stagger */}
+          <div className="flex items-center justify-center gap-6 mt-6 animate-stagger-6">
             {['HIPAA COMPLIANT', '256-BIT AES', 'GDPR PROTECTED'].map((badge) => (
-              <div key={badge} className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-clinical-muted">
+              <div key={badge} className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-widest text-clinical-muted hover:text-primary-500 transition-colors duration-300 cursor-default">
                 <svg className="w-3.5 h-3.5 text-primary-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
                 </svg>

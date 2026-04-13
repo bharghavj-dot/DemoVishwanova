@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doc Tong — AI-Driven Preventive Health Monitoring</title>
+    <meta name="description" content="Doc Tong uses AI-powered tongue diagnostics with the TriLens macro attachment to deliver real-time preventive health insights from a single scan.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- ═══════════════════ HEADER ═══════════════════ -->
+    <header id="site-header">
+        <nav class="nav-container">
+            <a href="#" class="logo">
+                <span class="logo-icon">
+                    <svg width="28" height="28" viewBox="0 0 28 28" fill="none">
+                        <rect width="28" height="28" rx="7" fill="url(#logo-grad)"/>
+                        <path d="M8 14c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+                        <circle cx="14" cy="14" r="2.5" fill="#fff"/>
+                        <defs><linearGradient id="logo-grad" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#00d4aa"/><stop offset="1" stop-color="#2196f3"/></linearGradient></defs>
+                    </svg>
+                </span>
+                <span class="logo-text">Doc Tong</span>
+            </a>
+            <ul class="nav-links">
+                <li><a href="#how-it-works">How It Works</a></li>
+                <li><a href="#features">Features</a></li>
+                <li><a href="#tech-stack">Tech Stack</a></li>
+                <li><a href="#roadmap">Roadmap</a></li>
+            </ul>
+            <a href="#hero" class="nav-cta">Get Early Access</a>
+            <button class="mobile-menu-btn" id="mobile-menu-btn" aria-label="Toggle menu">
+                <span></span><span></span><span></span>
+            </button>
+        </nav>
+    </header>
+
+    <!-- ═══════════════════ HERO — SCROLL ANIMATION ═══════════════════ -->
+    <section id="hero">
+        <div class="hero-scroll-container">
+            <div class="hero-sticky">
+                <canvas id="hero-canvas"></canvas>
+                <div class="hero-overlay">
+                    <div class="hero-content">
+                        <p class="hero-tag">Introducing Doc Tong</p>
+                        <h1>AI-Driven Preventive<br>Health Monitoring</h1>
+                        <p class="hero-subtitle">Harnessing computer vision and the TriLens macro attachment to transform a simple tongue scan into a comprehensive, real-time health diagnostic.</p>
+                        <div class="hero-actions">
+                            <a href="#how-it-works" class="btn btn-primary">See How It Works</a>
+                            <a href="#features" class="btn btn-ghost">Explore Features</a>
+                        </div>
+                    </div>
+                    <div class="scroll-hint" id="scroll-hint">
+                        <span>Scroll to explore</span>
+                        <div class="scroll-arrow">
+                            <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><path d="M10 4v12m0 0l-4-4m4 4l4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                        </div>
+                    </div>
+                </div>
+                <!-- Progress bar for animation -->
+                <div class="hero-progress">
+                    <div class="hero-progress-bar" id="hero-progress-bar"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ HOW IT WORKS — STORYBOARD ═══════════════════ -->
+    <section id="how-it-works" class="section">
+        <div class="container">
+            <div class="section-header reveal">
+                <p class="section-tag">The Journey</p>
+                <h2>How It Works</h2>
+                <p class="section-desc">From a simple scan to a comprehensive health report — in four effortless steps.</p>
+            </div>
+            <div class="storyboard-grid">
+                <div class="story-card reveal" style="--delay: 0s">
+                    <div class="story-number">01</div>
+                    <div class="story-visual">
+                        <img src="img/ezgif-frame-001.png" alt="Open the App" loading="lazy">
+                    </div>
+                    <h3>Open the App</h3>
+                    <p>Launch the TriLens app — the interface glows softly, ready to begin your health check in seconds.</p>
+                </div>
+                <div class="story-card reveal" style="--delay: .12s">
+                    <div class="story-number">02</div>
+                    <div class="story-visual">
+                        <img src="img/ezgif-frame-050.png" alt="Capture the Tongue" loading="lazy">
+                    </div>
+                    <h3>Capture the Tongue</h3>
+                    <p>The subject opens wide — the macro lens captures the tongue's surface topography in stunning detail.</p>
+                </div>
+                <div class="story-card reveal" style="--delay: .24s">
+                    <div class="story-number">03</div>
+                    <div class="story-visual">
+                        <img src="img/ezgif-frame-100.png" alt="AI Scanning" loading="lazy">
+                    </div>
+                    <h3>AI Scanning</h3>
+                    <p>A digital scanning grid connects the lens to the tongue, as the neural network processes the image in real time.</p>
+                </div>
+                <div class="story-card reveal" style="--delay: .36s">
+                    <div class="story-number">04</div>
+                    <div class="story-visual">
+                        <img src="img/ezgif-frame-150.png" alt="Results & Health Map" loading="lazy">
+                    </div>
+                    <h3>Results &amp; Health Map</h3>
+                    <p>A 3D tongue map with color-coded heat zones, hydration levels, and coating thickness — all in your pocket.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ FEATURES ═══════════════════ -->
+    <section id="features" class="section section-alt">
+        <div class="container">
+            <div class="section-header reveal">
+                <p class="section-tag">Core Technology</p>
+                <h2>Feature Breakdown</h2>
+                <p class="section-desc">Three pillars powering the most advanced tongue diagnostic platform on the market.</p>
+            </div>
+            <div class="features-grid">
+                <!-- Lens Technology -->
+                <div class="feature-card reveal" style="--delay: 0s">
+                    <div class="feature-icon">
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                            <circle cx="20" cy="20" r="18" stroke="url(#fi1)" stroke-width="2"/>
+                            <circle cx="20" cy="20" r="10" stroke="url(#fi1)" stroke-width="1.5"/>
+                            <circle cx="20" cy="20" r="4" fill="url(#fi1)"/>
+                            <defs><linearGradient id="fi1" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#00d4aa"/><stop offset="1" stop-color="#2196f3"/></linearGradient></defs>
+                        </svg>
+                    </div>
+                    <h3>Lens Technology</h3>
+                    <p class="feature-label">Macro Imaging</p>
+                    <p>The TriLens attachment delivers 40× magnification with multi-spectrum illumination — capturing surface-level detail invisible to the naked eye.</p>
+                    <ul class="feature-specs">
+                        <li><span>40×</span> Magnification</li>
+                        <li><span>12MP</span> Sensor Resolution</li>
+                        <li><span>3</span> Light Spectrum Modes</li>
+                    </ul>
+                </div>
+                <!-- AI Engine -->
+                <div class="feature-card feature-card-highlight reveal" style="--delay: .12s">
+                    <div class="feature-icon">
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                            <rect x="4" y="4" width="32" height="32" rx="6" stroke="url(#fi2)" stroke-width="2"/>
+                            <path d="M14 20h12M20 14v12" stroke="url(#fi2)" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="14" cy="14" r="2" fill="url(#fi2)"/>
+                            <circle cx="26" cy="14" r="2" fill="url(#fi2)"/>
+                            <circle cx="14" cy="26" r="2" fill="url(#fi2)"/>
+                            <circle cx="26" cy="26" r="2" fill="url(#fi2)"/>
+                            <defs><linearGradient id="fi2" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#00d4aa"/><stop offset="1" stop-color="#2196f3"/></linearGradient></defs>
+                        </svg>
+                    </div>
+                    <h3>AI Engine</h3>
+                    <p class="feature-label">Pattern Recognition</p>
+                    <p>A proprietary convolutional neural network trained on 100K+ annotated tongue images identifies over 40 distinct biomarkers in under 3 seconds.</p>
+                    <ul class="feature-specs">
+                        <li><span>100K+</span> Training Images</li>
+                        <li><span>40+</span> Biomarkers Detected</li>
+                        <li><span>&lt;3s</span> Analysis Time</li>
+                    </ul>
+                </div>
+                <!-- Data Integration -->
+                <div class="feature-card reveal" style="--delay: .24s">
+                    <div class="feature-icon">
+                        <svg width="40" height="40" viewBox="0 0 40 40" fill="none">
+                            <path d="M20 6v6m0 16v6M6 20h6m16 0h6" stroke="url(#fi3)" stroke-width="2" stroke-linecap="round"/>
+                            <circle cx="20" cy="20" r="8" stroke="url(#fi3)" stroke-width="2"/>
+                            <path d="M20 4C11.16 4 4 11.16 4 20s7.16 16 16 16 16-7.16 16-16S28.84 4 20 4z" stroke="url(#fi3)" stroke-width="1.2" stroke-dasharray="3 3"/>
+                            <defs><linearGradient id="fi3" x1="0" y1="0" x2="40" y2="40"><stop stop-color="#00d4aa"/><stop offset="1" stop-color="#2196f3"/></linearGradient></defs>
+                        </svg>
+                    </div>
+                    <h3>Data Integration</h3>
+                    <p class="feature-label">Secure Cloud Reporting</p>
+                    <p>End-to-end encrypted health reports sync to your provider's dashboard — enabling longitudinal tracking, predictive alerts, and HIPAA-compliant data sharing.</p>
+                    <ul class="feature-specs">
+                        <li><span>E2E</span> Encryption</li>
+                        <li><span>HIPAA</span> Compliant</li>
+                        <li><span>API</span> Integration Ready</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ TECH STACK ═══════════════════ -->
+    <section id="tech-stack" class="section">
+        <div class="container">
+            <div class="tech-layout">
+                <div class="tech-info reveal">
+                    <p class="section-tag">Under the Hood</p>
+                    <h2>Tech Stack</h2>
+                    <p class="section-desc">The proprietary engineering stack powering Doc Tong's real-time diagnostic pipeline — from photon to prediction.</p>
+                </div>
+                <div class="tech-list">
+                    <div class="tech-item reveal" style="--delay: 0s">
+                        <div class="tech-dot"></div>
+                        <div class="tech-content">
+                            <h4>Computer Vision</h4>
+                            <p>Multi-spectral image pre-processing with adaptive histogram equalization and real-time segmentation of tongue regions.</p>
+                        </div>
+                    </div>
+                    <div class="tech-item reveal" style="--delay: .1s">
+                        <div class="tech-dot"></div>
+                        <div class="tech-content">
+                            <h4>Neural Networks</h4>
+                            <p>Custom EfficientNet-v2 architecture fine-tuned on a curated medical dataset, optimized for mobile inference via TensorFlow Lite.</p>
+                        </div>
+                    </div>
+                    <div class="tech-item reveal" style="--delay: .2s">
+                        <div class="tech-dot"></div>
+                        <div class="tech-content">
+                            <h4>Mobile Edge Computing</h4>
+                            <p>On-device inference with CoreML / NNAPI — zero cloud latency for critical first-pass analysis. Full results sync asynchronously.</p>
+                        </div>
+                    </div>
+                    <div class="tech-item reveal" style="--delay: .3s">
+                        <div class="tech-dot"></div>
+                        <div class="tech-content">
+                            <h4>Secure Data Layer</h4>
+                            <p>AES-256 at rest, TLS 1.3 in transit. FHIR-compatible health records with granular access controls and audit logging.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ ROADMAP ═══════════════════ -->
+    <section id="roadmap" class="section section-alt">
+        <div class="container">
+            <div class="section-header reveal">
+                <p class="section-tag">The Vision</p>
+                <h2>Implementation Roadmap</h2>
+                <p class="section-desc">From hackathon winner to a full-scale preventive health ecosystem.</p>
+            </div>
+            <div class="roadmap-timeline">
+                <div class="roadmap-line"></div>
+                <div class="roadmap-phase reveal" style="--delay: 0s">
+                    <div class="phase-marker">
+                        <span>1</span>
+                    </div>
+                    <div class="phase-card">
+                        <p class="phase-label">Phase 1</p>
+                        <h4>Foundation</h4>
+                        <p>MVP development — core tongue imaging pipeline, initial CNN model training, and proof-of-concept mobile app with basic scan &amp; report.</p>
+                    </div>
+                </div>
+                <div class="roadmap-phase reveal" style="--delay: .12s">
+                    <div class="phase-marker">
+                        <span>2</span>
+                    </div>
+                    <div class="phase-card">
+                        <p class="phase-label">Phase 2</p>
+                        <h4>Clinical Validation</h4>
+                        <p>IRB-approved clinical trials, expanded training dataset to 100K+ images, and partnership with medical institutions for ground-truth labeling.</p>
+                    </div>
+                </div>
+                <div class="roadmap-phase reveal" style="--delay: .24s">
+                    <div class="phase-marker">
+                        <span>3</span>
+                    </div>
+                    <div class="phase-card">
+                        <p class="phase-label">Phase 3</p>
+                        <h4>Scale & Integrate</h4>
+                        <p>TriLens hardware mass production, EHR integrations via FHIR APIs, multi-language support, and launch on iOS &amp; Android app stores.</p>
+                    </div>
+                </div>
+                <div class="roadmap-phase reveal" style="--delay: .36s">
+                    <div class="phase-marker">
+                        <span>4</span>
+                    </div>
+                    <div class="phase-card">
+                        <p class="phase-label">Phase 4</p>
+                        <h4>Health Ecosystem</h4>
+                        <p>Predictive health alerts, wearable integrations, telehealth partnerships, and expansion into multi-organ diagnostics beyond tongue analysis.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════ FOOTER ═══════════════════ -->
+    <footer id="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <a href="#" class="logo">
+                        <span class="logo-icon">
+                            <svg width="24" height="24" viewBox="0 0 28 28" fill="none">
+                                <rect width="28" height="28" rx="7" fill="url(#logo-grad2)"/>
+                                <path d="M8 14c0-3.3 2.7-6 6-6s6 2.7 6 6-2.7 6-6 6" stroke="#fff" stroke-width="2.2" stroke-linecap="round"/>
+                                <circle cx="14" cy="14" r="2.5" fill="#fff"/>
+                                <defs><linearGradient id="logo-grad2" x1="0" y1="0" x2="28" y2="28"><stop stop-color="#00d4aa"/><stop offset="1" stop-color="#2196f3"/></linearGradient></defs>
+                            </svg>
+                        </span>
+                        <span class="logo-text">Doc Tong</span>
+                    </a>
+                    <p>AI-driven preventive health monitoring through advanced tongue diagnostics.</p>
+                </div>
+                <div class="footer-links">
+                    <h5>Product</h5>
+                    <a href="#features">Features</a>
+                    <a href="#how-it-works">How It Works</a>
+                    <a href="#tech-stack">Tech Stack</a>
+                    <a href="#roadmap">Roadmap</a>
+                </div>
+                <div class="footer-links">
+                    <h5>Company</h5>
+                    <a href="#">About</a>
+                    <a href="#">Careers</a>
+                    <a href="#">Press Kit</a>
+                    <a href="#">Contact</a>
+                </div>
+                <div class="footer-links">
+                    <h5>Legal</h5>
+                    <a href="#">Privacy Policy</a>
+                    <a href="#">Terms of Service</a>
+                    <a href="#">HIPAA Compliance</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Doc Tong. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
