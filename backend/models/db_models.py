@@ -193,3 +193,15 @@ class AuthToken(Base):
     token = Column(String(64), primary_key=True)
     user_id = Column(String(20), ForeignKey("users.id"), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
+
+
+# ── Password Reset Tokens ─────────────────────────────────────────────────────
+
+class PasswordResetToken(Base):
+    __tablename__ = "password_reset_tokens"
+
+    token = Column(String(64), primary_key=True)
+    user_id = Column(String(20), ForeignKey("users.id"), nullable=False, index=True)
+    created_at = Column(DateTime, default=datetime.utcnow)
+    expires_at = Column(DateTime, nullable=False)
+    used = Column(Boolean, default=False)

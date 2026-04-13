@@ -22,6 +22,7 @@ import Consultations from './pages/Consultations';
 import Profile from './pages/Profile';
 import Family from './pages/Family';
 import DoctorDashboard from './pages/DoctorDashboard';
+import ResetPassword from './pages/ResetPassword';
 
 /* ── Page transition wrapper ── */
 function PageTransition({ children }) {
@@ -73,6 +74,7 @@ function AppContent() {
               <Route path="/" element={<Homepage />} />
               <Route path="/login" element={state.token ? <Navigate to="/dashboard" /> : <Login />} />
               <Route path="/register" element={state.token ? <Navigate to="/dashboard" /> : <Register />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
               {/* Protected routes */}
               <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />

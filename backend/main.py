@@ -11,6 +11,13 @@ import sys
 import time
 from pathlib import Path
 
+# Load .env file
+try:
+    from dotenv import load_dotenv
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
+except ImportError:
+    pass  # python-dotenv not installed, use system env vars
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 

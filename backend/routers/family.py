@@ -121,3 +121,16 @@ async def get_member_reports(
         )
         for r in user_reports
     ]
+
+
+@router.delete("/members/{member_id}", status_code=200)
+async def delete_family_member(
+    member_id: str,
+    user: dict = Depends(get_current_user_dep),
+    db: Session = Depends(get_db),
+):
+    """Remove a family member from the guardian's dashboard."""
+    deleted = crud.delete_family_member(db, member_id, user["id"])
+    if not deleted:
+        raise HTTPException(status_code=404, detail="Family member not found")
+    return {"message": "Family member removed successfully"}

@@ -13,6 +13,26 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [demoLoading, setDemoLoading] = useState('');
+  // Forgot password state
+  const [showForgotModal, setShowForgotModal] = useState(false);
+  const [forgotEmail, setForgotEmail] = useState('');
+  const [forgotLoading, setForgotLoading] = useState(false);
+  const [forgotSuccess, setForgotSuccess] = useState(false);
+  const [forgotError, setForgotError] = useState('');
+
+  const handleForgotPassword = async (e) => {
+    e.preventDefault();
+    setForgotError('');
+    setForgotLoading(true);
+    try {
+      await API.post('/auth/forgot-password', { email: forgotEmail });
+      setForgotSuccess(true);
+    } catch (err) {
+      setForgotError('Something went wrong. Please try again.');
+    } finally {
+      setForgotLoading(false);
+    }
+  };
 
   const roleOptions = [
     { value: 'patient', label: 'PATIENT', desc: 'Access my health data', icon: (
@@ -164,7 +184,7 @@ export default function Login() {
                   <input type="checkbox" className="rounded border-clinical-border text-primary-500 focus:ring-primary-300 transition-all duration-200" />
                   <span className="group-hover:text-clinical-text transition-colors duration-200">Keep session secure</span>
                 </label>
-                <button type="button" className="text-primary-500 font-medium hover:underline text-sm transition-all duration-200 hover:text-primary-400">
+                <button type="button" onClick={() => { setShowForgotModal(true); setForgotSuccess(false); setForgotError(''); setForgotEmail(''); }} className="text-primary-500 font-medium hover:underline text-sm transition-all duration-200 hover:text-primary-400">
                   Forgot Access Key?
                 </button>
               </div>
@@ -257,6 +277,114 @@ export default function Login() {
           </div>
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════════
+          FORGOT PASSWORD MODAL
+         ═══════════════════════════════════════════════ */}
+      {showForgotModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => setShowForgotModal(false)}>
+          {/* Backdrop */}
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+
+          {/* Modal */}
+          <div
+            className="relative w-full max-w-md bg-white rounded-2xl shadow-2xl p-8 animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Close button */}
+            <button
+              onClick={() => setShowForgotModal(false)}
+              className="absolute top-4 right-4 text-clinical-muted hover:text-clinical-text transition-colors"
+            >
+              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+
+            {forgotSuccess ? (
+              /* ── Success State ── */
+              <div className="text-center animate-fade-in">
+                <div className="w-16 h-16 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-4 validation-icon">
+                  <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                </div>
+                <h3 className="text-xl font-bold text-clinical-text mb-2">Check Your Email</h3>
+                <p className="text-sm text-clinical-muted mb-6 leading-relaxed">
+                  If an account with that email exists, we've sent a password reset link. Please check your inbox (and the backend console for demo purposes).
+                </p>
+                <button
+                  onClick={() => setShowForgotModal(false)}
+                  className="btn-primary px-8 py-2.5 text-sm"
+                >
+                  Got It
+                </button>
+              </div>
+            ) : (
+              /* ── Email Form ── */
+              <>
+                <div className="text-center mb-6">
+                  <div className="w-14 h-14 mx-auto bg-primary-50 rounded-2xl flex items-center justify-center mb-3">
+                    <svg className="w-7 h-7 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" />
+                    </svg>
+                  </div>
+                  <h3 className="text-xl font-bold text-clinical-text">Reset Your Access Key</h3>
+                  <p className="text-sm text-clinical-muted mt-1">Enter your registered email to receive a reset link</p>
+                </div>
+
+                {forgotError && (
+                  <div className="mb-4 p-3 bg-red-50 border border-red-200 rounded-xl text-sm text-red-600 flex items-center gap-2">
+                    <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    {forgotError}
+                  </div>
+                )}
+
+                <form onSubmit={handleForgotPassword} className="space-y-4">
+                  <div>
+                    <label className="label-text">Medical Email</label>
+                    <div className="relative group">
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-clinical-muted group-focus-within:text-primary-500 transition-colors duration-300">
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <input
+                        type="email"
+                        value={forgotEmail}
+                        onChange={(e) => setForgotEmail(e.target.value)}
+                        placeholder="iris.walker@trilens.med"
+                        className="input-field"
+                        required
+                        autoFocus
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={forgotLoading}
+                    className="btn-primary w-full flex items-center justify-center gap-2"
+                  >
+                    {forgotLoading ? (
+                      <LoadingSpinner size="sm" />
+                    ) : (
+                      <>
+                        Send Reset Link
+                        <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                        </svg>
+                      </>
+                    )}
+                  </button>
+                </form>
+              </>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

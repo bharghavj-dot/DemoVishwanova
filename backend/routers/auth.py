@@ -1,7 +1,8 @@
 """
 Trilens Router — Authentication (PostgreSQL)
 ==============================================
-Endpoints: POST /auth/register, POST /auth/login, POST /auth/demo-login, GET /auth/me
+Endpoints: POST /auth/register, POST /auth/login, POST /auth/demo-login, GET /auth/me,
+           POST /auth/forgot-password, POST /auth/reset-password
 Matches Login.png and Create Account.png pages.
 """
 
@@ -160,3 +161,114 @@ async def get_me(user: dict = Depends(get_current_user_dep)):
         k: v for k, v in user.items()
         if k in UserPublic.model_fields
     })
+
+
+# ── POST /auth/forgot-password ────────────────────────────────────────────
+
+@router.post("/forgot-password")
+async def forgot_password(req: dict, db: Session = Depends(get_db)):
+    """
+    Request a password reset link.
+    Sends a real email via Gmail SMTP if configured, otherwise prints to console.
+    Always returns success to prevent email enumeration.
+    """
+    import os
+    import smtplib
+    from email.mime.text import MIMEText
+    from email.mime.multipart import MIMEMultipart
+
+    email = req.get("email", "").strip()
+    user = crud.get_user_by_email(db, email)
+
+    if user:
+        token = crud.create_password_reset_token(db, user.id)
+        reset_url = f"http://localhost:5173/reset-password?token={token}"
+
+        smtp_email = os.environ.get("SMTP_EMAIL", "")
+        smtp_password = os.environ.get("SMTP_PASSWORD", "")
+
+        if smtp_email and smtp_password:
+            # Send real email via Gmail SMTP
+            try:
+                msg = MIMEMultipart("alternative")
+                msg["Subject"] = "Reset Your Trilens Password"
+                msg["From"] = f"Trilens <{smtp_email}>"
+                msg["To"] = user.email
+
+                html_body = f"""
+                <div style="font-family: 'Inter', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; background: #f8fafa;">
+                  <div style="background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e8eded;">
+                    <div style="text-align: center; margin-bottom: 32px;">
+                      <div style="display: inline-block; width: 56px; height: 56px; background: linear-gradient(135deg, #1B4D4B, #00D4AA); border-radius: 14px; line-height: 56px; color: white; font-size: 24px; font-weight: bold;">T</div>
+                    </div>
+                    <h1 style="color: #1A2C2C; font-size: 22px; font-weight: 700; text-align: center; margin: 0 0 8px;">Reset Your Password</h1>
+                    <p style="color: #6B8A8A; font-size: 14px; text-align: center; margin: 0 0 32px; line-height: 1.6;">
+                      Hi <strong>{user.full_name}</strong>, we received a request to reset your access key. Click the button below to set a new password.
+                    </p>
+                    <div style="text-align: center; margin-bottom: 32px;">
+                      <a href="{reset_url}" style="display: inline-block; background: linear-gradient(135deg, #1B4D4B, #00D4AA); color: white; text-decoration: none; padding: 14px 40px; border-radius: 12px; font-size: 15px; font-weight: 600; letter-spacing: 0.5px;">
+                        Reset Password
+                      </a>
+                    </div>
+                    <p style="color: #9BB0B0; font-size: 12px; text-align: center; margin: 0 0 16px;">This link expires in 1 hour. If you didn't request this, ignore this email.</p>
+                    <hr style="border: none; border-top: 1px solid #e8eded; margin: 24px 0;" />
+                    <p style="color: #b0c4c4; font-size: 11px; text-align: center; margin: 0;">Trilens — Precision Clinical Diagnostics</p>
+                  </div>
+                </div>
+                """
+
+                text_body = f"Hi {user.full_name},\n\nReset your password here: {reset_url}\n\nThis link expires in 1 hour.\n\n— Trilens"
+
+                msg.attach(MIMEText(text_body, "plain"))
+                msg.attach(MIMEText(html_body, "html"))
+
+                with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+                    server.login(smtp_email, smtp_password)
+                    server.sendmail(smtp_email, user.email, msg.as_string())
+
+                print(f"[auth] Password reset email sent to {user.email}")
+
+            except Exception as e:
+                print(f"[auth] Failed to send email: {e}")
+                # Fallback to console
+                print(f"[auth] Reset URL: {reset_url}")
+        else:
+            # No SMTP configured — print to console
+            print("\n" + "=" * 60)
+            print("PASSWORD RESET LINK (no SMTP configured)")
+            print(f"  User: {user.full_name} ({user.email})")
+            print(f"  URL:  {reset_url}")
+            print(f"  Token expires in 1 hour.")
+            print("=" * 60 + "\n")
+
+    return {"message": "If an account with that email exists, a password reset link has been sent."}
+
+
+# ── POST /auth/reset-password ─────────────────────────────────────────────
+
+@router.post("/reset-password")
+async def reset_password(req: dict, db: Session = Depends(get_db)):
+    """
+    Reset a user's password using a valid reset token.
+    """
+    token = req.get("token", "")
+    new_password = req.get("new_password", "")
+    confirm_password = req.get("confirm_password", "")
+
+    if not token or not new_password:
+        raise HTTPException(status_code=400, detail="Token and new password are required.")
+
+    if len(new_password) < 6:
+        raise HTTPException(status_code=400, detail="Password must be at least 6 characters.")
+
+    if new_password != confirm_password:
+        raise HTTPException(status_code=400, detail="Passwords do not match.")
+
+    user = crud.validate_reset_token(db, token)
+    if not user:
+        raise HTTPException(status_code=400, detail="Invalid or expired reset token.")
+
+    crud.update_user_password(db, user.id, new_password)
+    crud.mark_reset_token_used(db, token)
+
+    return {"message": "Password has been reset successfully. You can now sign in with your new password."}

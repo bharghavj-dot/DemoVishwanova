@@ -20,6 +20,7 @@ from backend.models.db_models import (
     DiagnosticSession,
     Doctor,
     FamilyMember,
+    PasswordResetToken,
     Report,
     User,
 )
@@ -351,4 +352,63 @@ def link_pending_family_members(db: Session, user: User):
         member.pending_email = None
         
     if pending_members:
+        db.commit()
+
+
+def delete_family_member(db: Session, member_id: str, guardian_id: str) -> bool:
+    """Delete a family member. Returns True if deleted, False if not found."""
+    member = db.query(FamilyMember).filter(
+        FamilyMember.id == member_id,
+        FamilyMember.guardian_id == guardian_id,
+    ).first()
+    if not member:
+        return False
+    db.delete(member)
+    db.commit()
+    return True
+
+
+# ══════════════════════════════════════════════════════════════════════════════
+# PASSWORD RESET
+# ══════════════════════════════════════════════════════════════════════════════
+
+def create_password_reset_token(db: Session, user_id: str) -> str:
+    """Create a password reset token valid for 1 hour."""
+    from datetime import timedelta
+    token_str = uuid.uuid4().hex
+    reset_token = PasswordResetToken(
+        token=token_str,
+        user_id=user_id,
+        expires_at=datetime.utcnow() + timedelta(hours=1),
+    )
+    db.add(reset_token)
+    db.commit()
+    return token_str
+
+
+def validate_reset_token(db: Session, token: str) -> Optional[User]:
+    """Validate a password reset token and return the associated user."""
+    reset_token = db.query(PasswordResetToken).filter(
+        PasswordResetToken.token == token,
+        PasswordResetToken.used == False,
+        PasswordResetToken.expires_at > datetime.utcnow(),
+    ).first()
+    if not reset_token:
+        return None
+    return db.query(User).get(reset_token.user_id)
+
+
+def mark_reset_token_used(db: Session, token: str):
+    """Mark a reset token as used."""
+    reset_token = db.query(PasswordResetToken).get(token)
+    if reset_token:
+        reset_token.used = True
+        db.commit()
+
+
+def update_user_password(db: Session, user_id: str, new_password: str):
+    """Update a user's password."""
+    user = db.query(User).get(user_id)
+    if user:
+        user.password = new_password
         db.commit()

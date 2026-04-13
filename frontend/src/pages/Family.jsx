@@ -12,6 +12,8 @@ export default function Family() {
   const [adding, setAdding] = useState(false);
   const [viewingReports, setViewingReports] = useState(null);
   const [memberReports, setMemberReports] = useState([]);
+  const [deleteTarget, setDeleteTarget] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     fetchMembers();
@@ -44,6 +46,22 @@ export default function Family() {
       setMemberReports(Array.isArray(res.data) ? res.data : (res.data.reports || []));
       setViewingReports(memberId);
     } catch (err) { /* handled */ }
+  };
+
+  const handleDeleteMember = async () => {
+    if (!deleteTarget) return;
+    setDeleting(true);
+    try {
+      await API.delete(`/family/members/${deleteTarget.id}`);
+      dispatch({ type: 'SET_TOAST', payload: { message: `${deleteTarget.name} has been removed.`, type: 'success' } });
+      setDeleteTarget(null);
+      if (viewingReports === deleteTarget.id) setViewingReports(null);
+      fetchMembers();
+    } catch (err) {
+      dispatch({ type: 'SET_TOAST', payload: { message: 'Failed to remove member.', type: 'error' } });
+    } finally {
+      setDeleting(false);
+    }
   };
 
   const statusColors = {
@@ -84,6 +102,17 @@ export default function Family() {
                     {member.status}
                   </span>
                 </div>
+
+                {/* Delete button */}
+                <button
+                  onClick={() => setDeleteTarget(member)}
+                  className="absolute top-4 left-4 w-8 h-8 rounded-full bg-red-50 hover:bg-red-100 flex items-center justify-center text-red-400 hover:text-red-600 transition-all duration-200 opacity-60 hover:opacity-100"
+                  title="Remove member"
+                >
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </button>
 
                 {/* Avatar */}
                 <div className={`w-24 h-24 rounded-full mx-auto mb-4 bg-gradient-to-br ${avatarColors[i % avatarColors.length]} flex items-center justify-center text-3xl font-bold text-white shadow-lg ring-4 ring-white`}>
@@ -171,6 +200,54 @@ export default function Family() {
           )}
         </div>
       </div>
+
+      {/* ═══════════════════════════════════════════════
+          DELETE CONFIRMATION MODAL
+         ═══════════════════════════════════════════════ */}
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4" onClick={() => !deleting && setDeleteTarget(null)}>
+          <div className="absolute inset-0 bg-black/40 backdrop-blur-sm"></div>
+          <div
+            className="relative w-full max-w-sm bg-white rounded-2xl shadow-2xl p-8 text-center animate-scale-in"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-16 h-16 mx-auto bg-red-100 rounded-full flex items-center justify-center mb-4">
+              <svg className="w-8 h-8 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+              </svg>
+            </div>
+            <h3 className="text-lg font-bold text-clinical-text mb-2">Remove Family Member</h3>
+            <p className="text-sm text-clinical-muted mb-6">
+              Are you sure you want to remove <strong>{deleteTarget.name}</strong> ({deleteTarget.relationship}) from your family dashboard? This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+                className="btn-outline flex-1"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteMember}
+                disabled={deleting}
+                className="flex-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-300 disabled:opacity-50 flex items-center justify-center gap-2"
+              >
+                {deleting ? (
+                  <LoadingSpinner size="sm" />
+                ) : (
+                  <>
+                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                    Remove
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

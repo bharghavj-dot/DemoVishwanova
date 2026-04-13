@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useApp } from '../context/AppContext';
 import API from '../api/axios';
 import LoadingSpinner from '../components/LoadingSpinner';
+import TiltedCard from '../components/TiltedCard';
 import stethImg from '../steth.jpeg';
 
 export default function Consultations() {
@@ -43,6 +44,19 @@ export default function Consultations() {
     } catch (err) { /* handled */ }
   };
 
+  // Generate a gradient avatar URL based on doctor name for TiltedCard
+  const getAvatarGradient = (name, index) => {
+    const gradients = [
+      'linear-gradient(135deg, #1B4D4B 0%, #00D4AA 100%)',
+      'linear-gradient(135deg, #6366f1 0%, #a78bfa 100%)',
+      'linear-gradient(135deg, #f43f5e 0%, #fb7185 100%)',
+      'linear-gradient(135deg, #0ea5e9 0%, #38bdf8 100%)',
+      'linear-gradient(135deg, #f59e0b 0%, #fbbf24 100%)',
+      'linear-gradient(135deg, #10b981 0%, #34d399 100%)',
+    ];
+    return gradients[index % gradients.length];
+  };
+
   return (
     <div
       style={{
@@ -54,7 +68,7 @@ export default function Consultations() {
         position: 'relative',
       }}
     >
-      {/* Semi-transparent overlay to soften the image and provide a denser glass effect */}
+      {/* Semi-transparent overlay */}
       <div style={{
         position: 'absolute', inset: 0,
         background: 'rgba(230, 240, 240, 0.65)',
@@ -103,10 +117,10 @@ export default function Consultations() {
         ) : (
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
             {doctors.map((doc, i) => (
-              <div 
-                key={i} 
-                className="card-static p-6 animate-slide-up" 
-                style={{ 
+              <div
+                key={i}
+                className="rounded-2xl overflow-hidden animate-slide-up"
+                style={{
                   animationDelay: `${i * 0.1}s`,
                   background: 'rgba(255, 255, 255, 0.8)',
                   backdropFilter: 'blur(24px)',
@@ -114,58 +128,84 @@ export default function Consultations() {
                   border: '1px solid rgba(255,255,255,0.7)',
                 }}
               >
-                <div className="flex items-start gap-4 mb-4">
-                  <div className="w-20 h-20 rounded-2xl bg-clinical-bg flex items-center justify-center text-2xl font-bold text-primary-500 flex-shrink-0">
-                    {doc.name?.split(' ').map(n => n[0]).join('').slice(0, 2)}
-                  </div>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-2">
-                      <h3 className="text-lg font-bold text-clinical-text">{doc.name}</h3>
-                      {doc.verified && <span className="badge-success text-[9px]">Verified</span>}
-                    </div>
-                    <p className="text-sm text-primary-500 font-medium">{doc.specialty}</p>
-                    {doc.specialties && (
-                      <div className="flex flex-wrap gap-1 mt-2">
-                        {doc.specialties.map((s, j) => (
-                          <span key={j} className="text-[10px] px-2 py-0.5 rounded-full border border-clinical-border text-clinical-muted">{s}</span>
-                        ))}
+                {/* TiltedCard Avatar Section */}
+                <div className="relative">
+                  <TiltedCard
+                    imageSrc={doc.avatar_url || stethImg}
+                    altText={doc.name}
+                    captionText={doc.specialty}
+                    containerHeight="200px"
+                    containerWidth="100%"
+                    imageHeight="200px"
+                    imageWidth="100%"
+                    scaleOnHover={1.08}
+                    rotateAmplitude={10}
+                    showMobileWarning={false}
+                    showTooltip={true}
+                    displayOverlayContent={true}
+                    overlayContent={
+                      <div className="text-white">
+                        <div className="flex items-center gap-2">
+                          <span className="text-lg font-bold">{doc.name}</span>
+                          {doc.verified && (
+                            <span className="w-5 h-5 bg-green-400 rounded-full flex items-center justify-center text-white text-[10px]">✓</span>
+                          )}
+                        </div>
+                        <p className="text-sm text-white/80">{doc.specialty}</p>
                       </div>
-                    )}
-                  </div>
+                    }
+                  />
                 </div>
 
-                {/* Rating */}
-                <div className="flex items-center gap-1 mb-4">
-                  {[...Array(5)].map((_, j) => (
-                    <svg key={j} className={`w-4 h-4 ${j < Math.floor(doc.rating || 0) ? 'text-amber-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                    </svg>
-                  ))}
-                  <span className="text-sm text-clinical-muted ml-1">{doc.rating} ({doc.review_count} reviews)</span>
-                </div>
-
-                {/* Fee + Availability */}
-                <div className="grid grid-cols-2 gap-4 mb-4">
-                  <div>
-                    <p className="text-[10px] text-clinical-muted uppercase tracking-widest">Fee</p>
-                    <p className="text-xl font-bold text-clinical-text">${doc.fee?.toFixed(0)} <span className="text-xs font-normal text-clinical-muted">/ session</span></p>
+                {/* Doctor Info */}
+                <div className="p-5">
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="text-lg font-bold text-clinical-text">{doc.name}</h3>
+                    {doc.verified && <span className="badge-success text-[9px]">Verified</span>}
                   </div>
-                  <div>
-                    <p className="text-[10px] text-clinical-muted uppercase tracking-widest">Availability</p>
-                    <p className="text-sm font-semibold text-primary-500">{doc.availability}</p>
-                  </div>
-                </div>
+                  <p className="text-sm text-primary-500 font-medium mb-2">{doc.specialty}</p>
 
-                {/* Actions */}
-                <div className="flex gap-3">
-                  <button onClick={() => handleBook(doc.id)} className="btn-primary text-sm py-2.5 flex-1">
-                    Book Consultation
-                  </button>
-                  <button className="w-10 h-10 rounded-xl border border-clinical-border flex items-center justify-center text-clinical-muted hover:text-primary-500 hover:border-primary-200 transition-all">
-                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                    </svg>
-                  </button>
+                  {doc.specialties && (
+                    <div className="flex flex-wrap gap-1 mb-3">
+                      {doc.specialties.map((s, j) => (
+                        <span key={j} className="text-[10px] px-2 py-0.5 rounded-full border border-clinical-border text-clinical-muted">{s}</span>
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Rating */}
+                  <div className="flex items-center gap-1 mb-3">
+                    {[...Array(5)].map((_, j) => (
+                      <svg key={j} className={`w-4 h-4 ${j < Math.floor(doc.rating || 0) ? 'text-amber-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                    <span className="text-sm text-clinical-muted ml-1">{doc.rating} ({doc.review_count})</span>
+                  </div>
+
+                  {/* Fee + Availability */}
+                  <div className="grid grid-cols-2 gap-4 mb-4">
+                    <div>
+                      <p className="text-[10px] text-clinical-muted uppercase tracking-widest">Fee</p>
+                      <p className="text-xl font-bold text-clinical-text">${doc.fee?.toFixed(0)} <span className="text-xs font-normal text-clinical-muted">/ session</span></p>
+                    </div>
+                    <div>
+                      <p className="text-[10px] text-clinical-muted uppercase tracking-widest">Availability</p>
+                      <p className="text-sm font-semibold text-primary-500">{doc.availability}</p>
+                    </div>
+                  </div>
+
+                  {/* Actions */}
+                  <div className="flex gap-3">
+                    <button onClick={() => handleBook(doc.id)} className="btn-primary text-sm py-2.5 flex-1">
+                      Book Consultation
+                    </button>
+                    <button className="w-10 h-10 rounded-xl border border-clinical-border flex items-center justify-center text-clinical-muted hover:text-primary-500 hover:border-primary-200 transition-all">
+                      <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                      </svg>
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}

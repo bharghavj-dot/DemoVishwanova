@@ -41,8 +41,16 @@ async def get_doctor_dashboard(
     if user.get("role") != "doctor":
         raise HTTPException(status_code=403, detail="Doctor role required")
 
-    doctor_id = user["id"].replace("USR-", "")
-    all_bookings = crud.get_bookings_by_doctor(db, doctor_id)
+    # Find the doctor profile linked to this user
+    from backend.models.db_models import Doctor
+    doctor = db.query(Doctor).filter(
+        Doctor.name.ilike(f"%{user['full_name']}%")
+    ).first()
+
+    if doctor:
+        all_bookings = crud.get_bookings_by_doctor(db, doctor.id)
+    else:
+        all_bookings = []
 
     total_patients = len(all_bookings)
     pending_reviews = sum(1 for b in all_bookings if b.status in ("confirmed", "pending"))
@@ -62,9 +70,9 @@ async def get_doctor_dashboard(
     ]
 
     stats = DoctorStatsResponse(
-        total_patients=max(total_patients, 1284),
-        pending_reviews=max(pending_reviews, 42),
-        emergency_escalations=max(emergency_escalations, 3),
+        total_patients=total_patients,
+        pending_reviews=pending_reviews,
+        emergency_escalations=emergency_escalations,
     )
 
     return DoctorDashboardResponse(stats=stats, bookings=booking_items)
