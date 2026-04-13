@@ -68,6 +68,8 @@ async def add_family_member(
     if req.email:
         linked_user = crud.get_user_by_email(db, req.email)
         if linked_user:
+            if linked_user.role == "doctor":
+                raise HTTPException(status_code=400, detail="Doctors cannot be added as family members.")
             linked_user_id = linked_user.id
 
     member = crud.create_family_member(
