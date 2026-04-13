@@ -98,15 +98,24 @@ async def health_check():
 async def root():
     return {"message": "Trilens API v1.0.0", "docs": "/docs", "health": "/health"}
 
-@app.get("/migrate-db", tags=["System"])
-async def migrate_db():
+@app.get("/sync-family")
+def sync_family_members():
+    from backend.database import SessionLocal
+    from backend.models.db_models import FamilyMember, User
+    from sqlalchemy import text
     try:
-        from sqlalchemy import text
-        from backend.database import SessionLocal
         with SessionLocal() as db:
-            db.execute(text("ALTER TABLE family_members ADD COLUMN IF NOT EXISTS pending_email VARCHAR(255)"))
-            db.execute(text("CREATE INDEX IF NOT EXISTS ix_family_members_pending_email ON family_members (pending_email)"))
-            db.commit()
-        return {"message": "Migration successful! Database schema is now updated."}
+            pending = db.query(FamilyMember).filter(FamilyMember.linked_user_id == None, FamilyMember.pending_email != None).all()
+            linked_count = 0
+            for m in pending:
+                clean_email = m.pending_email.strip().lower()
+                user = db.query(User).filter(User.email.ilike(clean_email)).first()
+                if user:
+                    m.linked_user_id = user.id
+                    m.pending_email = None
+                    linked_count += 1
+            if linked_count > 0:
+                db.commit()
+            return {"message": f"Successfully synced {linked_count} family members."}
     except Exception as e:
         return {"error": str(e)}
