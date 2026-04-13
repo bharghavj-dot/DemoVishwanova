@@ -166,22 +166,18 @@ async def get_me(user: dict = Depends(get_current_user_dep)):
 # ── POST /auth/forgot-password ────────────────────────────────────────────
 
 def _send_reset_email_task(user_email: str, full_name: str, reset_url: str):
-    """Background task to handle the blocking SMTP connection"""
+    """Background task to handle the Resend email API connection"""
     import os
-    import smtplib
-    from email.mime.text import MIMEText
-    from email.mime.multipart import MIMEMultipart
+    import resend
 
-    smtp_email = os.environ.get("SMTP_EMAIL", "")
-    smtp_password = os.environ.get("SMTP_PASSWORD", "")
+    resend_api_key = os.environ.get("RESEND_API_KEY", "")
+    
+    # Resend uses onboarding@resend.dev for free testing limits, or your custom verified domain.
+    sender_email = os.environ.get("RESEND_SENDER_EMAIL", "onboarding@resend.dev")
 
-    if smtp_email and smtp_password:
+    if resend_api_key:
+        resend.api_key = resend_api_key
         try:
-            msg = MIMEMultipart("alternative")
-            msg["Subject"] = "Reset Your Trilens Password"
-            msg["From"] = f"Trilens <{smtp_email}>"
-            msg["To"] = user_email
-
             html_body = f"""
             <div style="font-family: 'Inter', Arial, sans-serif; max-width: 520px; margin: 0 auto; padding: 40px 24px; background: #f8fafa;">
               <div style="background: white; border-radius: 16px; padding: 40px 32px; box-shadow: 0 4px 24px rgba(0,0,0,0.06); border: 1px solid #e8eded;">
@@ -204,29 +200,23 @@ def _send_reset_email_task(user_email: str, full_name: str, reset_url: str):
             </div>
             """
 
-            text_body = f"Hi {full_name},\n\nReset your password here: {reset_url}\n\nThis link expires in 1 hour.\n\n— Trilens"
+            params = {
+                "from": f"Trilens <{sender_email}>",
+                "to": [user_email],
+                "subject": "Reset Your Trilens Password",
+                "html": html_body,
+            }
 
-            msg.attach(MIMEText(text_body, "plain"))
-            msg.attach(MIMEText(html_body, "html"))
-
-            # Switch from port 465 (SSL) to 587 (STARTTLS)
-            # This often bypasses 'Network is unreachable' on free cloud tiers and IPv6 routing errors
-            with smtplib.SMTP("smtp.gmail.com", 587) as server:
-                server.ehlo()
-                server.starttls()
-                server.login(smtp_email, smtp_password)
-                server.sendmail(smtp_email, user_email, msg.as_string())
-
-            print(f"[auth] Password reset email sent to {user_email}")
+            email_response = resend.Emails.send(params)
+            print(f"[auth] Password reset email sent via Resend to {user_email}. Response: {email_response}")
 
         except Exception as e:
-            print(f"[auth] Failed to send email: {e}")
-            # Fallback to console
+            print(f"[auth] Failed to send email via Resend: {e}")
             print(f"[auth] Reset URL: {reset_url}")
     else:
-        # No SMTP configured — print to console
+        # No Resend API config — print to console
         print("\n" + "=" * 60)
-        print("PASSWORD RESET LINK (no SMTP configured)")
+        print("PASSWORD RESET LINK (no RESEND_API_KEY configured)")
         print(f"  User: {full_name} ({user_email})")
         print(f"  URL:  {reset_url}")
         print(f"  Token expires in 1 hour.")
