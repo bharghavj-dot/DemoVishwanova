@@ -41,7 +41,7 @@ export default function Family() {
   const handleViewDashboard = async (memberId) => {
     try {
       const res = await API.get(`/family/members/${memberId}/reports`);
-      setMemberReports(res.data.reports || []);
+      setMemberReports(Array.isArray(res.data) ? res.data : (res.data.reports || []));
       setViewingReports(memberId);
     } catch (err) { /* handled */ }
   };
