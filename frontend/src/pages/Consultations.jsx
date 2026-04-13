@@ -138,8 +138,8 @@ export default function Consultations() {
                     containerWidth="100%"
                     imageHeight="200px"
                     imageWidth="100%"
-                    scaleOnHover={1.08}
-                    rotateAmplitude={10}
+                    scaleOnHover={1}
+                    rotateAmplitude={0}
                     showMobileWarning={false}
                     showTooltip={true}
                     displayOverlayContent={true}
@@ -159,11 +159,6 @@ export default function Consultations() {
 
                 {/* Doctor Info */}
                 <div className="p-5">
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="text-lg font-bold text-clinical-text">{doc.name}</h3>
-                    {doc.verified && <span className="badge-success text-[9px]">Verified</span>}
-                  </div>
-                  <p className="text-sm text-primary-500 font-medium mb-2">{doc.specialty}</p>
 
                   {doc.specialties && (
                     <div className="flex flex-wrap gap-1 mb-3">
