@@ -131,10 +131,22 @@ def seed():
             },
         ]
 
+        doctor_users = []
+        for d in doctors_data:
+            email_prefix = d["name"].lower().replace(" ", ".").replace("dr.", "dr")
+            doctor_users.append(User(
+                id=f"USR-{d['id']}",
+                full_name=d["name"],
+                email=f"{email_prefix}@trilens.med",
+                password="demo123",
+                role="doctor",
+            ))
+        db.add_all(doctor_users)
+
         for d in doctors_data:
             db.add(Doctor(**d))
         db.flush()
-        print(f"  Added {len(doctors_data)} doctors")
+        print(f"  Added {len(doctors_data)} doctors and their user accounts")
 
         # ── Family Members (for guardian) ─────────────────────────────────
         print("[seed] Inserting family members...")
