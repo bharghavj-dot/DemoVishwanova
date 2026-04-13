@@ -50,7 +50,7 @@ export default function Navbar() {
     );
   }
 
-  // Patient/Guardian nav links
+  // Patient nav links
   const patientLinks = [
     { to: '/dashboard', label: 'Dashboard' },
     { to: '/scan', label: 'Scans' },
@@ -58,19 +58,25 @@ export default function Navbar() {
     { to: '/profile', label: 'Profile' },
   ];
 
-  // Doctor nav links
-  const doctorLinks = [
-    { to: '/doctor/dashboard', label: 'Dashboard' },
-    { to: '/scan', label: 'Scans' },
-    { to: '/consultations', label: 'Consultations' },
+  // Guardian nav links
+  const guardianLinks = [
+    { to: '/family', label: 'Family' },
     { to: '/profile', label: 'Profile' },
   ];
 
-  const links = state.user?.role === 'doctor' ? [...doctorLinks] : [...patientLinks];
+  // Doctor nav links
+  const doctorLinks = [
+    { to: '/doctor/dashboard', label: 'Dashboard' },
+    { to: '/profile', label: 'Profile' },
+  ];
 
-  // Add Family for guardian
-  if (state.user?.role === 'guardian') {
-    links.splice(1, 0, { to: '/family', label: 'Family' });
+  let links = [];
+  if (state.user?.role === 'doctor') {
+    links = [...doctorLinks];
+  } else if (state.user?.role === 'guardian') {
+    links = [...guardianLinks];
+  } else {
+    links = [...patientLinks];
   }
 
   return (
@@ -195,15 +201,17 @@ export default function Navbar() {
                     </svg>
                     My Profile
                   </button>
-                  <button
-                    onClick={() => { setProfileOpen(false); navigate('/dashboard'); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-sm text-clinical-text hover:bg-primary-50 hover:text-primary-500 transition-all duration-200"
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                    </svg>
-                    Dashboard
-                  </button>
+                  {!(state.user?.role === 'doctor' || state.user?.role === 'guardian') && (
+                    <button
+                      onClick={() => { setProfileOpen(false); navigate('/dashboard'); }}
+                      className="w-full flex items-center gap-3 px-4 py-3 text-sm text-clinical-text hover:bg-primary-50 hover:text-primary-500 transition-all duration-200"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                      </svg>
+                      Dashboard
+                    </button>
+                  )}
                 </div>
 
                 {/* About section */}

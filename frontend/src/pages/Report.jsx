@@ -183,7 +183,7 @@ export default function Report() {
               </svg>
             </div>
             <h3 className="text-xl font-bold text-clinical-text mb-2">Refine Diagnostic Accuracy</h3>
-            <p className="text-sm text-clinical-muted mb-6">Answer 5 targeted clinical questions to improve the precision of your scan analysis.</p>
+            <p className="text-sm text-clinical-muted mb-6">Answer 9 targeted clinical questions to improve the precision of your scan analysis.</p>
             <button
               onClick={handleStartQA}
               disabled={startingQA}

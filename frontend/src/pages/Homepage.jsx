@@ -374,8 +374,8 @@ export default function Homepage() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 text-center text-white stagger-children">
             {[
-              { value: '40K+', label: 'Clinical Cases' },
-              { value: '99.2%', label: 'Accuracy Rate' },
+              { value: '100+', label: 'Clinical Cases' },
+              { value: '89%', label: 'Accuracy Rate' },
               { value: '3', label: 'Biomarker Scans' },
               { value: '<2m', label: 'Analysis Time' },
             ].map((stat, i) => (
