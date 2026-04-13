@@ -41,7 +41,8 @@ async def get_doctor_dashboard(
     if user.get("role") != "doctor":
         raise HTTPException(status_code=403, detail="Doctor role required")
 
-    all_bookings = crud.get_all_bookings(db)
+    doctor_id = user["id"].replace("USR-", "")
+    all_bookings = crud.get_bookings_by_doctor(db, doctor_id)
 
     total_patients = len(all_bookings)
     pending_reviews = sum(1 for b in all_bookings if b.status in ("confirmed", "pending"))

@@ -283,6 +283,11 @@ def get_all_bookings(db: Session) -> list[Booking]:
     return db.query(Booking).all()
 
 
+def get_bookings_by_doctor(db: Session, doctor_id: str) -> list[Booking]:
+    """Get bookings for a specific doctor."""
+    return db.query(Booking).filter(Booking.doctor_id == doctor_id).all()
+
+
 def get_booking_by_id(db: Session, booking_id: str) -> Optional[Booking]:
     """Get booking by ID."""
     return db.query(Booking).get(booking_id)
