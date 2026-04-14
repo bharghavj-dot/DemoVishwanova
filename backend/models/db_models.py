@@ -78,7 +78,7 @@ class DiagnosticSession(Base):
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String(20), default="pending")
     # pending → uploading → analyzing → analyzed → qa_started → qa_completed
-    #        → pending_voice_consult → voice_in_progress → finalized
+    #        → pending_voice → voice_in_progress → finalized
 
     # JSON columns for complex nested data
     uploads = Column(JSON, default=lambda: {"eye": False, "tongue": False, "nail": False})

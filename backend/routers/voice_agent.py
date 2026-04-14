@@ -58,10 +58,10 @@ async def initiate_voice_consult(
     if session.user_id != user["id"]:
         raise HTTPException(status_code=403, detail="Session belongs to another user")
 
-    if session.status not in ("pending_voice_consult", "qa_completed"):
+    if session.status not in ("pending_voice", "qa_completed"):
         raise HTTPException(
             status_code=400,
-            detail=f"Session must be in 'pending_voice_consult' state. Current: {session.status}",
+            detail=f"Session must be in 'pending_voice' state. Current: {session.status}",
         )
 
     # Validate Twilio credentials
@@ -266,7 +266,7 @@ async def twilio_status_callback(request: Request):
                 crud.update_session(
                     db, session,
                     voice_status="none",
-                    status="pending_voice_consult",
+                    status="pending_voice",
                 )
         finally:
             db.close()
@@ -316,7 +316,7 @@ async def skip_voice_consult(
     if session.user_id != user["id"]:
         raise HTTPException(status_code=403, detail="Session belongs to another user")
 
-    if session.status not in ("pending_voice_consult", "qa_completed"):
+    if session.status not in ("pending_voice", "qa_completed"):
         raise HTTPException(
             status_code=400,
             detail=f"Cannot skip voice consult in state '{session.status}'",

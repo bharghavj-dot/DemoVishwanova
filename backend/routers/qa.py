@@ -136,7 +136,7 @@ async def submit_answer(
             db, session,
             answers=new_answers,
             qa_probabilities=updated_probs,
-            status="pending_voice_consult",
+            status="pending_voice",
             final_output=final_output
         )
         # NOTE: Report finalization is now deferred to the voice consult phase.
