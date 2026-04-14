@@ -293,6 +293,10 @@ async def twilio_status_callback(request: Request):
                         confidence=ranked[0][1] if ranked else report.confidence,
                         severity=final_output.get("severity", report.severity),
                     )
+                    # Copy voice transcript from session to report
+                    report.call_transcript = session.call_transcript
+                    db.commit()
+                    print(f"[voice_agent] ✓ Report finalized with transcript: {session.call_transcript}")
 
                 print(f"[voice_agent] ✓ Session {session_id} finalized after voice call")
 
