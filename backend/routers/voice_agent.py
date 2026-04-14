@@ -498,7 +498,7 @@ def _finalize_report(
     report.primary_disease = ranked[0][0] if ranked else report.primary_disease
     report.confidence = ranked[0][1] if ranked else report.confidence
     report.severity = final_output.get("severity", report.severity)
-    report.call_transcript = transcript if transcript else None
+    report.call_transcript = session.call_transcript  # Copy voice transcript from session
     report.voice_analysis = voice_analysis
 
     db.commit()
