@@ -23,8 +23,16 @@ export default function VoiceConsult() {
       const { voice_status } = res.data;
       
       if (voice_status === 'completed') {
-        clearInterval(pollingInterval.current);
-        navigate(`/report/${session_id}/final`);
+        // Wait for the final report to be ready before redirecting.
+        try {
+          await API.get(`/reports/${session_id}/final`);
+          clearInterval(pollingInterval.current);
+          navigate(`/report/${session_id}/final`);
+          return;
+        } catch {
+          if (status !== 'analysis') setStatus('analysis');
+          return;
+        }
       } else if (voice_status === 'analysis' && status !== 'analysis') {
         setStatus('analysis');
       } else if (voice_status === 'in_progress' && status !== 'in_progress') {
