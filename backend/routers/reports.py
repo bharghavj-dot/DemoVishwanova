@@ -183,6 +183,8 @@ async def get_final_report(
         escalation_flags=final["escalation_flags"],
         see_doctor_flag=final["see_doctor_flag"],
         recommended_specialists=recommended,
+        voice_transcript=report.call_transcript,
+        voice_analysis=report.voice_analysis,
     )
 
 

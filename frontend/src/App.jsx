@@ -24,6 +24,8 @@ import Family from './pages/Family';
 import DoctorDashboard from './pages/DoctorDashboard';
 import ResetPassword from './pages/ResetPassword';
 
+import VoiceConsult from './pages/VoiceConsult';
+
 /* ── Page transition wrapper ── */
 function PageTransition({ children }) {
   const location = useLocation();
@@ -81,6 +83,7 @@ function AppContent() {
               <Route path="/scan" element={<ProtectedRoute><Scan /></ProtectedRoute>} />
               <Route path="/report/:session_id" element={<ProtectedRoute><Report /></ProtectedRoute>} />
               <Route path="/qa/:session_id" element={<ProtectedRoute><QA /></ProtectedRoute>} />
+              <Route path="/voice-consult/:session_id" element={<ProtectedRoute><VoiceConsult /></ProtectedRoute>} />
               <Route path="/report/:session_id/final" element={<ProtectedRoute><FinalReport /></ProtectedRoute>} />
               <Route path="/consultations" element={<ProtectedRoute><Consultations /></ProtectedRoute>} />
               <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />

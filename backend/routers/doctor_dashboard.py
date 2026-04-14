@@ -56,18 +56,26 @@ async def get_doctor_dashboard(
     pending_reviews = sum(1 for b in all_bookings if b.status in ("confirmed", "pending"))
     emergency_escalations = sum(1 for b in all_bookings if _is_emergency(db, b.session_id))
 
-    booking_items = [
-        PatientBooking(
-            booking_id=b.id,
-            patient_name=b.patient_name or "Unknown",
-            patient_id=b.patient_id or "",
-            symptom_cluster=b.symptom_cluster or "Visual Biomarker Scan",
-            scan_type=b.scan_type or "MULTI-MODAL",
-            criteria_status=b.criteria_status or "Awaiting Q&A",
-            session_id=b.session_id,
+    booking_items = []
+    for b in all_bookings:
+        has_voice = False
+        if b.session_id:
+            session = crud.get_session(db, b.session_id)
+            if session and session.voice_status == "completed":
+                has_voice = True
+                
+        booking_items.append(
+            PatientBooking(
+                booking_id=b.id,
+                patient_name=b.patient_name or "Unknown",
+                patient_id=b.patient_id or "",
+                symptom_cluster=b.symptom_cluster or "Visual Biomarker Scan",
+                scan_type=b.scan_type or "MULTI-MODAL",
+                criteria_status=b.criteria_status or "Awaiting Q&A",
+                session_id=b.session_id,
+                has_voice_consult=has_voice,
+            )
         )
-        for b in all_bookings
-    ]
 
     stats = DoctorStatsResponse(
         total_patients=total_patients,

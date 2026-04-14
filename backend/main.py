@@ -59,6 +59,8 @@ from backend.routers.family import router as family_router
 from backend.routers.qa import router as qa_router
 from backend.routers.reports import router as reports_router
 from backend.routers.session import router as profile_router
+from backend.routers.doctor_dashboard import router as doctor_dashboard_router
+from backend.routers.voice_agent import router as voice_router
 
 app.include_router(auth_router)
 app.include_router(diagnose_router)
@@ -68,6 +70,7 @@ app.include_router(doctors_router)
 app.include_router(family_router)
 app.include_router(profile_router)
 app.include_router(doctor_dashboard_router)
+app.include_router(voice_router)
 
 
 # ── Startup Event ─────────────────────────────────────────────────────────────

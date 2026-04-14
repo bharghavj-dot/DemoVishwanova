@@ -192,6 +192,8 @@ class FinalReportResponse(BaseModel):
     escalation_flags: list[str]
     see_doctor_flag: bool
     recommended_specialists: list[DoctorCard] = []
+    voice_transcript: Optional[list[dict]] = None
+    voice_analysis: Optional[dict] = None
 
 
 class MedicationItem(BaseModel):
@@ -247,6 +249,36 @@ class QAStatusResponse(BaseModel):
     is_complete: bool
     answered_indices: list[int]
     probabilities: dict[str, float]
+
+
+# ── Voice Consult ─────────────────────────────────────────────────────────────
+
+class VoiceConsultInitRequest(BaseModel):
+    """Request to start a voice consult call."""
+    phone_number: str = Field(..., examples=["+1234567890"])
+
+
+class VoiceConsultInitResponse(BaseModel):
+    """Response after initiating a voice consult."""
+    session_id: str
+    call_sid: str
+    status: str = "pending"
+    message: str = "Call initiated. You will receive a call shortly."
+
+
+class VoiceConsultStatusResponse(BaseModel):
+    """Current status of a voice consult."""
+    session_id: str
+    voice_status: str
+    call_sid: Optional[str] = None
+    transcript: Optional[list[dict]] = None
+    voice_analysis: Optional[dict] = None
+
+
+class TranscriptEntry(BaseModel):
+    role: str          # "patient" or "ai"
+    text: str
+    timestamp: str
 
 
 # ── Doctors / Consultation ────────────────────────────────────────────────────
@@ -357,6 +389,7 @@ class PatientBooking(BaseModel):
     criteria_status: str
     avatar_url: Optional[str] = None
     session_id: Optional[str] = None
+    has_voice_consult: bool = False
 
 
 class DoctorDashboardResponse(BaseModel):

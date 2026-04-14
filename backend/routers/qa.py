@@ -136,20 +136,13 @@ async def submit_answer(
             db, session,
             answers=new_answers,
             qa_probabilities=updated_probs,
-            status="qa_completed",
+            status="pending_voice_consult",
             final_output=final_output
         )
-
-        report = crud.get_report_by_session(db, session_id)
-        if report:
-            ranked = sorted(updated_probs.items(), key=lambda x: x[1], reverse=True)
-            crud.finalize_report(
-                db, report,
-                final_data=final_output,
-                primary_disease=ranked[0][0] if ranked else report.primary_disease,
-                confidence=ranked[0][1] if ranked else report.confidence,
-                severity=final_output["severity"]
-            )
+        # NOTE: Report finalization is now deferred to the voice consult phase.
+        # The report is finalized either by:
+        #   POST /voice/{session_id}/skip   — user skips voice consult
+        #   POST /voice/status              — call completed callback
     else:
         crud.update_session(
             db, session,

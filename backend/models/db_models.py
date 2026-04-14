@@ -52,6 +52,7 @@ class User(Base):
     password = Column(String(255), nullable=False)  # plain text for MVP; hash in prod
     role = Column(String(20), nullable=False)  # patient, doctor, guardian
     patient_id = Column(String(20), nullable=True)
+    phone_number = Column(String(20), nullable=True)  # For Twilio voice consult
     avatar_url = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow)
 
@@ -76,7 +77,8 @@ class DiagnosticSession(Base):
     user_id = Column(String(20), ForeignKey("users.id"), nullable=False, index=True)
     created_at = Column(DateTime, default=datetime.utcnow)
     status = Column(String(20), default="pending")
-    # pending → uploading → analyzing → analyzed → qa_started → qa_completed → finalized
+    # pending → uploading → analyzing → analyzed → qa_started → qa_completed
+    #        → pending_voice_consult → voice_in_progress → finalized
 
     # JSON columns for complex nested data
     uploads = Column(JSON, default=lambda: {"eye": False, "tongue": False, "nail": False})
@@ -89,6 +91,12 @@ class DiagnosticSession(Base):
     answers = Column(JSON, default=dict)             # {question_index: answer_type}
     qa_probabilities = Column(JSON, default=dict)   # updated Bayesian posteriors
     final_output = Column(JSON, nullable=True)       # format_output() result
+
+    # Voice consult fields
+    call_sid = Column(String(50), nullable=True)          # Twilio Call SID
+    call_transcript = Column(JSON, nullable=True)          # [{role, text, timestamp}, ...]
+    voice_analysis = Column(JSON, nullable=True)           # LLM clinical summary + adjustments
+    voice_status = Column(String(20), default="none")     # none|pending|in_progress|completed|skipped
 
     # Relationships
     user = relationship("User", back_populates="sessions")
@@ -113,6 +121,8 @@ class Report(Base):
     precautions = Column(JSON, default=list)     # [str, ...]
     is_final = Column(Boolean, default=False)
     final_data = Column(JSON, nullable=True)      # full format_output() dict
+    call_transcript = Column(JSON, nullable=True)  # Voice call transcript
+    voice_analysis = Column(JSON, nullable=True)   # Clinical summary from voice LLM
 
     # Relationships
     user = relationship("User", back_populates="reports")

@@ -34,3 +34,7 @@ opencv-python-headless
 
 # ── Gemini AI ─────────────────────────────────────────────────
 google-generativeai
+
+# ── Twilio Voice Integration ──────────────────────────────────
+twilio
+websockets

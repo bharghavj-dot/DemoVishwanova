@@ -195,6 +195,52 @@ export default function FinalReport() {
           </div>
         </div>
 
+        {/* Voice Consult Analysis */}
+        {report.voice_analysis && (
+          <div className="mb-6">
+            <h2 className="section-title mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
+              </svg>
+              AI Voice Consult Analysis
+            </h2>
+            <div className="card-static p-6 border-l-4 border-l-primary-500">
+              <p className="text-clinical-text font-medium leading-relaxed mb-4">
+                {report.voice_analysis.clinical_summary}
+              </p>
+              
+              <div className="grid md:grid-cols-2 gap-6">
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-clinical-muted mb-2">Key Findings from Call</h4>
+                  <ul className="space-y-1">
+                    {(report.voice_analysis.key_findings || []).map((finding, idx) => (
+                      <li key={idx} className="text-sm text-clinical-text flex items-start gap-2">
+                        <span className="text-primary-500 mt-1">•</span>
+                        {finding}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="text-xs font-bold uppercase tracking-widest text-clinical-muted mb-2">Confidence Adjustments</h4>
+                  <ul className="space-y-1">
+                    {(report.voice_analysis.confidence_changes || []).map((change, idx) => (
+                      <li key={idx} className="text-sm text-clinical-text flex items-start gap-2">
+                        {change.direction === 'increased' ? (
+                          <svg className="w-4 h-4 text-green-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 10l7-7m0 0l7 7m-7-7v18" /></svg>
+                        ) : (
+                          <svg className="w-4 h-4 text-red-500 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" /></svg>
+                        )}
+                        <span><span className="font-semibold">{change.disease.replace('_', ' ')}</span>: {change.reason}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Recommended Specialists */}
         {report.recommended_specialists && report.recommended_specialists.length > 0 && (
           <div className="mb-8">

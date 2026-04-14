@@ -68,7 +68,7 @@ export default function QA() {
       dispatch({ type: 'SET_CURRENT_QUESTION', payload: currentIdx + 1 });
 
       if (res.data.is_complete) {
-        navigate(`/report/${session_id}/final`);
+        navigate(`/voice-consult/${session_id}`);
         return;
       }
 

@@ -82,3 +82,57 @@ def generate_final_output(probs: dict[str, float]) -> dict:
         - see_doctor_flag: bool
     """
     return format_output(probs)
+
+
+def apply_voice_update(
+    current_probs: dict[str, float],
+    voice_analysis: dict,
+) -> dict[str, float]:
+    """
+    Apply the Voice LLM's probability adjustments after the phone call.
+
+    The voice_analysis dict contains 'adjusted_probabilities' with the LLM's
+    recommended changes based on the conversation (e.g., patient denied
+    right-quadrant pain → liver_disease probability decreases).
+
+    We blend these with current Bayesian posteriors using a weighted average
+    to prevent the LLM from overriding the statistical model entirely.
+
+    Parameters
+    ----------
+    current_probs : dict[str, float]
+        Current posterior probabilities from MCQ Bayesian updates.
+    voice_analysis : dict
+        Post-call analysis from the Voice LLM, must contain
+        'adjusted_probabilities' key.
+
+    Returns
+    -------
+    dict[str, float] — Blended and renormalized posteriors.
+    """
+    adjustments = voice_analysis.get("adjusted_probabilities", {})
+    if not adjustments:
+        return current_probs
+
+    VOICE_WEIGHT = 0.3  # 30% voice LLM influence, 70% Bayesian
+
+    blended = {}
+    for disease, prob in current_probs.items():
+        if disease in adjustments:
+            blended[disease] = (1 - VOICE_WEIGHT) * prob + VOICE_WEIGHT * adjustments[disease]
+        else:
+            blended[disease] = prob
+
+    # Renormalize to ensure probabilities sum to 1.0
+    total = sum(blended.values())
+    if total > 0:
+        blended = {d: p / total for d, p in blended.items()}
+
+    print(f"[bayesian_client] Voice update applied (weight={VOICE_WEIGHT})")
+    for d in sorted(blended, key=blended.get, reverse=True)[:3]:
+        old = current_probs.get(d, 0)
+        new = blended[d]
+        delta = new - old
+        print(f"    {d}: {old:.1%} → {new:.1%} ({'+' if delta >= 0 else ''}{delta:.1%})")
+
+    return blended
