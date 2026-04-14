@@ -75,9 +75,12 @@ app.include_router(voice_router)
 
 # ── Temporary Migration Endpoint ──────────────────────────────────────────────
 @app.get("/migrate_db")
-def migrate_db(db: Session = Depends(get_db)):
+def migrate_db():
     """Run ALTER TABLE commands on live database."""
     from sqlalchemy import text
+    from backend.database import SessionLocal
+    
+    db = SessionLocal()
     try:
         alter_statements = [
             "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);",
@@ -97,6 +100,8 @@ def migrate_db(db: Session = Depends(get_db)):
     except Exception as e:
         import traceback
         return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+    finally:
+        db.close()
 
 
 # ── Startup Event ─────────────────────────────────────────────────────────────
