@@ -272,7 +272,7 @@ class VoiceLLMBridge:
     async def _get_llm_response(self, chat, user_message: str) -> str:
         """Get a text response from Gemini chat."""
         try:
-            response = chat.send_message(
+            response = await chat.send_message_async(
                 user_message,
                 generation_config=genai.types.GenerationConfig(
                     temperature=0.7,
