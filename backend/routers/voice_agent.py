@@ -219,6 +219,15 @@ async def voice_stream_websocket(
     except Exception as e:
         print(f"[voice_agent] WebSocket error: {e}")
         traceback.print_exc()
+        try:
+            # Try to send error message back to Twilio
+            error_response = {
+                "event": "mark",
+                "mark": {"name": "error_occurred"}
+            }
+            await websocket.send_text(json.dumps(error_response))
+        except:
+            pass
     finally:
         bridge.stop()
 

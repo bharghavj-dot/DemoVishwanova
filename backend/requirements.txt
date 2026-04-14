@@ -37,4 +37,4 @@ google-generativeai
 
 # ── Twilio Voice Integration ──────────────────────────────────
 twilio
-websockets
+websocketspyttsx3
