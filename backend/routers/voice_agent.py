@@ -250,6 +250,15 @@ async def twilio_status_callback(request: Request):
     print(f"[voice_agent] Status callback: {call_status} for session {session_id} (SID: {call_sid})")
 
     if call_status == "completed" and session_id:
+        # Prevent UI from looking stuck while AI analyzes transcript
+        db = SessionLocal()
+        try:
+            session = crud.get_session(db, session_id)
+            if session:
+                crud.update_session(db, session, voice_status="analysis")
+        finally:
+            db.close()
+            
         # Call ended — trigger post-call analysis
         try:
             await _finalize_voice_consult(session_id)

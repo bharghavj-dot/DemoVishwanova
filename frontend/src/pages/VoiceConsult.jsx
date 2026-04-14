@@ -25,10 +25,16 @@ export default function VoiceConsult() {
       if (voice_status === 'completed') {
         clearInterval(pollingInterval.current);
         navigate(`/report/${session_id}/final`);
+      } else if (voice_status === 'analysis' && status !== 'analysis') {
+        setStatus('analysis');
       } else if (voice_status === 'in_progress' && status !== 'in_progress') {
         setStatus('in_progress');
       } else if (voice_status === 'pending' && status !== 'pending') {
         setStatus('pending');
+      } else if (voice_status === 'none' && ['pending', 'in_progress', 'analysis'].includes(status)) {
+        clearInterval(pollingInterval.current);
+        setStatus('none');
+        setError('Call disconnected or missed. You can try again or skip.');
       }
     } catch (err) {
       console.error(err);
@@ -38,12 +44,8 @@ export default function VoiceConsult() {
   };
 
   useEffect(() => {
-    if (status === 'pending' || status === 'in_progress') {
-      pollingInterval.current = setInterval(checkStatus, 3000);
-    } else if (status === 'analysis') {
-      setTimeout(() => {
-        navigate(`/report/${session_id}/final`);
-      }, 3000);
+    if (status === 'pending' || status === 'in_progress' || status === 'analysis') {
+      pollingInterval.current = setInterval(checkStatus, 2000);
     }
     
     return () => {
@@ -169,6 +171,14 @@ export default function VoiceConsult() {
               </div>
               <h2 className="text-xl font-bold text-primary-500">Consultation In Progress</h2>
               <p className="text-clinical-muted mt-2">Speak clearly after each question.</p>
+            </div>
+          )}
+
+          {status === 'analysis' && (
+            <div className="py-8 flex flex-col items-center">
+              <LoadingSpinner size="lg" />
+              <h2 className="text-xl font-bold text-clinical-text mt-6">Analyzing Consultation...</h2>
+              <p className="text-clinical-muted mt-2 max-w-sm">Generating a clinical summary and adjusting your final diagnostic probabilities.</p>
             </div>
           )}
         </div>
