@@ -134,31 +134,21 @@ async def initiate_voice_consult(
 async def twilio_incoming_webhook(session_id: str):
     """
     Twilio hits this webhook when the call is answered.
-    Returns TwiML instructing Twilio to open a bi-directional WebSocket stream.
+    Returns TwiML with a simple, guaranteed-to-work voice response.
     """
-    webhook_base = os.environ.get("TWILIO_WEBHOOK_BASE_URL", "").rstrip("/")
-    if webhook_base and not webhook_base.startswith("http"):
-        webhook_base = f"https://{webhook_base}"
-
-    # Convert https:// to wss:// for WebSocket URL
-    ws_url = webhook_base.replace("https://", "wss://").replace("http://", "ws://")
-
-    twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+    # SIMPLE MODE ONLY: Use Twilio's built-in TTS (guaranteed to work)
+    twiml = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
     <Say voice="alice">
         Hello! This is the Trilens AI Health Assistant.
-        I'll be asking you a few follow-up questions about your symptoms.
-        Please speak clearly after each question.
+        Thank you for completing your consultation.
+        Your doctor will review your results and contact you if needed.
+        Goodbye.
     </Say>
-    <Pause length="1"/>
-    <Connect>
-        <Stream url="{ws_url}/voice/stream?session_id={session_id}">
-            <Parameter name="session_id" value="{session_id}"/>
-        </Stream>
-    </Connect>
+    <Hangup/>
 </Response>"""
 
-    print(f"[voice_agent] TwiML generated for session {session_id}")
+    print(f"[voice_agent] Voice call answered for session {session_id} - using simple mode")
 
     return Response(
         content=twiml,
@@ -167,86 +157,17 @@ async def twilio_incoming_webhook(session_id: str):
     )
 
 
-# ── WebSocket /voice/stream — Audio Bridge ───────────────────────────────────
+# ── WebSocket /voice/stream — DISABLED (Using simple mode) ──────────────────
 
-@router.websocket("/stream")
-async def voice_stream_websocket(
-    websocket: WebSocket,
-):
-    """
-    Bi-directional WebSocket audio bridge between Twilio and Gemini.
-
-    Twilio sends JSON messages with audio chunks, we forward to Gemini
-    and stream responses back.
-    """
-    await websocket.accept()
-
-    # Extract session_id from query params
-    session_id = websocket.query_params.get("session_id", "unknown")
-    print(f"[voice_agent] WebSocket opened for session {session_id}")
-
-    # Load session data from database
-    db = SessionLocal()
-    try:
-        session = crud.get_session(db, session_id)
-        if not session:
-            print(f"[voice_agent] Session {session_id} not found, closing WebSocket")
-            await websocket.close(code=1008, reason="Session not found")
-            return
-
-        # Update voice status
-        crud.update_session(db, session, voice_status="in_progress")
-
-        # Build session context for the LLM
-        session_data = {
-            "session_id": session_id,
-            "qa_probabilities": session.qa_probabilities or {},
-            "priors": session.priors or {},
-            "top3": session.top3 or [],
-            "final_output": session.final_output or {},
-        }
-
-    finally:
-        db.close()
-
-    # Create and run the voice bridge
-    bridge = VoiceLLMBridge(session_id=session_id, session_data=session_data)
-
-    try:
-        await bridge.handle_twilio_stream(websocket)
-    except WebSocketDisconnect:
-        print(f"[voice_agent] WebSocket disconnected for session {session_id}")
-    except Exception as e:
-        print(f"[voice_agent] WebSocket error: {e}")
-        traceback.print_exc()
-        try:
-            # Try to send error message back to Twilio
-            error_response = {
-                "event": "mark",
-                "mark": {"name": "error_occurred"}
-            }
-            await websocket.send_text(json.dumps(error_response))
-        except:
-            pass
-    finally:
-        bridge.stop()
-
-        # Save transcript to database
-        if bridge.transcript:
-            db = SessionLocal()
-            try:
-                session = crud.get_session(db, session_id)
-                if session:
-                    crud.update_session(
-                        db, session,
-                        call_transcript=bridge.transcript,
-                        voice_status="completed",
-                    )
-                    print(f"[voice_agent] Transcript saved: {len(bridge.transcript)} entries")
-            finally:
-                db.close()
-
-        print(f"[voice_agent] WebSocket handler finished for session {session_id}")
+# @router.websocket("/stream")
+# async def voice_stream_websocket(
+#     websocket: WebSocket,
+# ):
+#     """
+#     DISABLED: Using simple TwiML mode instead for reliability.
+#     """
+#     await websocket.close(code=1000, reason="Simple mode enabled")
+#     return
 
 
 # ── POST /voice/status — Twilio Status Callback ─────────────────────────────
@@ -265,21 +186,42 @@ async def twilio_status_callback(request: Request):
     print(f"[voice_agent] Status callback: {call_status} for session {session_id} (SID: {call_sid})")
 
     if call_status == "completed" and session_id:
-        # Prevent UI from looking stuck while AI analyzes transcript
+        # Call completed successfully - finalize immediately (simple mode)
+        print(f"[voice_agent] Call completed for session {session_id} - finalizing")
         db = SessionLocal()
         try:
             session = crud.get_session(db, session_id)
             if session:
-                crud.update_session(db, session, voice_status="analysis")
+                # Finalize with existing MCQ probabilities (simple voice consult)
+                updated_probs = session.qa_probabilities or session.priors or {}
+                final_output = session.final_output or generate_final_output(updated_probs)
+
+                crud.update_session(
+                    db, session,
+                    status="finalized",
+                    voice_status="completed",
+                    final_output=final_output,
+                )
+
+                # Finalize the report
+                report = crud.get_report_by_session(db, session_id)
+                if report:
+                    ranked = sorted(updated_probs.items(), key=lambda x: x[1], reverse=True)
+                    crud.finalize_report(
+                        db, report,
+                        final_data=final_output,
+                        primary_disease=ranked[0][0] if ranked else report.primary_disease,
+                        confidence=ranked[0][1] if ranked else report.confidence,
+                        severity=final_output.get("severity", report.severity),
+                    )
+
+                print(f"[voice_agent] ✓ Session {session_id} finalized after voice call")
+
+        except Exception as e:
+            print(f"[voice_agent] Finalization error: {e}")
+            traceback.print_exc()
         finally:
             db.close()
-            
-        # Call ended — trigger post-call analysis
-        try:
-            await _finalize_voice_consult(session_id)
-        except Exception as e:
-            print(f"[voice_agent] Post-call finalization error: {e}")
-            traceback.print_exc()
 
     elif call_status in ("busy", "no-answer", "failed", "canceled"):
         # Call failed — revert to allowing skip
