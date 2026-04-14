@@ -179,8 +179,7 @@ class VoiceLLMBridge:
 
             # Use Gemini for generating conversational responses
             model = genai.GenerativeModel(
-                model_name="gemini-2.5-flash",
-                system_instruction=self.system_prompt,
+                model_name="gemini-2.5-flash"
             )
             chat = model.start_chat(history=[])
 
@@ -210,9 +209,10 @@ class VoiceLLMBridge:
                         register_bridge(self.stream_sid, self)
                     print(f"[voice_bridge] Stream started: {self.stream_sid}")
 
-                    # Send initial greeting
+                    # Send initial greeting with embedded system prompt
                     greeting = await self._get_llm_response(
                         chat,
+                        f"{self.system_prompt}\n\n"
                         "The patient has just connected to the call. "
                         "Greet them warmly and ask your first question."
                     )
@@ -261,9 +261,9 @@ class VoiceLLMBridge:
                     break
 
         except Exception as e:
-            print(f"[voice_bridge] Error in stream handler: {e}")
+            print(f"[voice_bridge] Critical stream handler error: {e}")
             traceback.print_exc()
-        finally:
+            self._is_active = False
             self._is_active = False
             if self.stream_sid:
                 remove_bridge(self.stream_sid)

@@ -131,13 +131,11 @@ async def initiate_voice_consult(
 
 @router.post("/incoming")
 @router.get("/incoming")
-async def twilio_incoming_webhook(request: Request):
+async def twilio_incoming_webhook(session_id: str):
     """
     Twilio hits this webhook when the call is answered.
     Returns TwiML instructing Twilio to open a bi-directional WebSocket stream.
     """
-    # Get session_id from query params
-    session_id = request.query_params.get("session_id", "unknown")
     webhook_base = os.environ.get("TWILIO_WEBHOOK_BASE_URL", "").rstrip("/")
     if webhook_base and not webhook_base.startswith("http"):
         webhook_base = f"https://{webhook_base}"
@@ -164,7 +162,8 @@ async def twilio_incoming_webhook(request: Request):
 
     return Response(
         content=twiml,
-        media_type="application/xml",
+        media_type="text/xml",
+        status_code=200
     )
 
 
