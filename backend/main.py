@@ -73,6 +73,32 @@ app.include_router(doctor_dashboard_router)
 app.include_router(voice_router)
 
 
+# ── Temporary Migration Endpoint ──────────────────────────────────────────────
+@app.get("/migrate_db")
+def migrate_db(db: Session = Depends(get_db)):
+    """Run ALTER TABLE commands on live database."""
+    from sqlalchemy import text
+    try:
+        alter_statements = [
+            "ALTER TABLE users ADD COLUMN IF NOT EXISTS phone_number VARCHAR(20);",
+            "ALTER TABLE sessions ADD COLUMN IF NOT EXISTS call_sid VARCHAR(50);",
+            "ALTER TABLE sessions ADD COLUMN IF NOT EXISTS call_transcript JSON;",
+            "ALTER TABLE sessions ADD COLUMN IF NOT EXISTS voice_analysis JSON;",
+            "ALTER TABLE sessions ADD COLUMN IF NOT EXISTS voice_status VARCHAR(20) DEFAULT 'none';",
+            "ALTER TABLE reports ADD COLUMN IF NOT EXISTS call_transcript JSON;",
+            "ALTER TABLE reports ADD COLUMN IF NOT EXISTS voice_analysis JSON;"
+        ]
+        stats = []
+        for stmt in alter_statements:
+            db.execute(text(stmt))
+            stats.append(f"Executed: {stmt}")
+        db.commit()
+        return {"status": "success", "message": "All columns added successfully", "logs": stats}
+    except Exception as e:
+        import traceback
+        return {"status": "error", "error": str(e), "traceback": traceback.format_exc()}
+
+
 # ── Startup Event ─────────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup_event():
