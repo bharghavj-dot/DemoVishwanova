@@ -9,6 +9,7 @@ Matches Report.png and Final_Report.png pages.
 from __future__ import annotations
 
 import io
+from datetime import datetime
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -214,6 +215,7 @@ async def download_pdf_report(
         "precautions": report.precautions or [],
         "created_at": report.created_at.isoformat() if report.created_at else "",
         "final_data": report.final_data or {},
+        "voice_transcript": report.call_transcript or [],
     }
 
     pdf_bytes = _generate_pdf(report_dict, user)
@@ -264,6 +266,24 @@ def _generate_pdf(report: dict, user: dict) -> bytes:
     flags = final.get("escalation_flags", [])
     if flags:
         lines += ["ESCALATION FLAGS", "-" * 50] + [f"  ! {f}" for f in flags] + [""]
+
+    # Voice Transcript
+    voice_transcript = report.get("voice_transcript", [])
+    if voice_transcript:
+        lines += ["VOICE CONSULTATION TRANSCRIPT", "-" * 50]
+        for entry in voice_transcript:
+            timestamp = entry.get("timestamp", "")
+            if timestamp:
+                # Format timestamp nicely
+                try:
+                    dt = datetime.fromisoformat(timestamp.replace("Z", "+00:00"))
+                    formatted_time = dt.strftime("%Y-%m-%d %H:%M:%S UTC")
+                except:
+                    formatted_time = timestamp
+                lines.append(f"  [{formatted_time}] Patient: {entry.get('text', '')}")
+            else:
+                lines.append(f"  Patient: {entry.get('text', '')}")
+        lines.append("")
 
     lines += [
         "=" * 50, "MEDICAL DISCLAIMER",
