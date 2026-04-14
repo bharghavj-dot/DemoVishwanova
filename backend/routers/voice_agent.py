@@ -137,9 +137,9 @@ async def twilio_incoming_webhook(session_id: str):
     Returns TwiML with an interactive voice consultation.
     """
     # Interactive mode: Allow user to speak and respond
-    twiml = """<?xml version="1.0" encoding="UTF-8"?>
+    twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather input="speech" timeout="60" speechTimeout="2" action="/voice/gather" method="POST">
+    <Gather input="speech" timeout="60" speechTimeout="2" action="/voice/gather?session_id={session_id}" method="POST">
         <Say voice="alice">
             Hello! This is the Trilens AI Health Assistant.
             Thank you for completing your consultation.
@@ -178,6 +178,11 @@ async def twilio_gather_speech(request: Request):
     session_id = request.query_params.get("session_id", "")
 
     print(f"[voice_agent] Speech received for session {session_id}: '{speech_result}' (confidence: {confidence})")
+
+    # Debug: Check if session exists
+    if not session_id:
+        print(f"[voice_agent] ERROR: No session_id provided in gather request")
+        return Response(content="Error: No session ID", status_code=400)
 
     # Process the user's speech
     if speech_result:
