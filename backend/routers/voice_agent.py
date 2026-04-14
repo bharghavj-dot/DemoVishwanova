@@ -134,21 +134,94 @@ async def initiate_voice_consult(
 async def twilio_incoming_webhook(session_id: str):
     """
     Twilio hits this webhook when the call is answered.
-    Returns TwiML with a simple, guaranteed-to-work voice response.
+    Returns TwiML with an interactive voice consultation.
     """
-    # SIMPLE MODE ONLY: Use Twilio's built-in TTS (guaranteed to work)
+    # Interactive mode: Allow user to speak and respond
     twiml = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
+    <Gather input="speech" timeout="5" action="/voice/gather" method="POST">
+        <Say voice="alice">
+            Hello! This is the Trilens AI Health Assistant.
+            Thank you for completing your consultation.
+            Please tell me briefly about any symptoms you're experiencing,
+            or say 'no symptoms' if you're feeling well.
+        </Say>
+    </Gather>
     <Say voice="alice">
-        Hello! This is the Trilens AI Health Assistant.
-        Thank you for completing your consultation.
-        Your doctor will review your results and contact you if needed.
+        I didn't hear anything. Your doctor will review your results.
         Goodbye.
     </Say>
     <Hangup/>
 </Response>"""
 
-    print(f"[voice_agent] Voice call answered for session {session_id} - using simple mode")
+    print(f"[voice_agent] Interactive voice call started for session {session_id}")
+
+    return Response(
+        content=twiml,
+        media_type="text/xml",
+        status_code=200
+    )
+
+
+# ── POST /voice/gather — Handle User Speech Input ───────────────────────────
+
+@router.post("/gather")
+@router.get("/gather")
+async def twilio_gather_speech(request: Request):
+    """
+    Handle speech input from the user during voice consultation.
+    """
+    form_data = await request.form()
+    speech_result = form_data.get("SpeechResult", "").strip()
+    confidence = form_data.get("Confidence", "0")
+    session_id = request.query_params.get("session_id", "")
+
+    print(f"[voice_agent] Speech received for session {session_id}: '{speech_result}' (confidence: {confidence})")
+
+    # Process the user's speech
+    if speech_result:
+        # Save the speech to database
+        db = SessionLocal()
+        try:
+            session = crud.get_session(db, session_id)
+            if session:
+                # Create a simple transcript
+                transcript = [{
+                    "role": "patient",
+                    "text": speech_result,
+                    "timestamp": datetime.now().isoformat() + "Z"
+                }]
+
+                crud.update_session(
+                    db, session,
+                    call_transcript=transcript,
+                    voice_status="completed"
+                )
+                print(f"[voice_agent] Speech saved to session {session_id}")
+        except Exception as e:
+            print(f"[voice_agent] Error saving speech: {e}")
+        finally:
+            db.close()
+
+        # Respond based on what they said
+        if "symptom" in speech_result.lower() or "pain" in speech_result.lower() or "hurt" in speech_result.lower():
+            response_text = "Thank you for sharing that information. Your doctor will review your symptoms along with your consultation results."
+        elif "no" in speech_result.lower() and "symptom" in speech_result.lower():
+            response_text = "Good to hear you're feeling well. Your doctor will still review your consultation results."
+        else:
+            response_text = "Thank you for that information. Your doctor will review everything and contact you if needed."
+    else:
+        response_text = "I didn't catch that clearly. Your doctor will review your consultation results."
+
+    # Return TwiML response
+    twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
+<Response>
+    <Say voice="alice">
+        {response_text}
+        Goodbye.
+    </Say>
+    <Hangup/>
+</Response>"""
 
     return Response(
         content=twiml,
