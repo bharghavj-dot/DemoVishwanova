@@ -241,6 +241,44 @@ export default function FinalReport() {
           </div>
         )}
 
+        {/* Voice Transcript */}
+        {report.voice_transcript && report.voice_transcript.length > 0 && (
+          <div className="mb-6">
+            <h2 className="section-title mb-4 flex items-center gap-2">
+              <svg className="w-5 h-5 text-primary-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+              </svg>
+              Voice Consultation Transcript
+            </h2>
+            <div className="card-static p-6 border-l-4 border-l-primary-500">
+              <div className="space-y-3">
+                {report.voice_transcript.map((entry, idx) => (
+                  <div key={idx} className="flex gap-3">
+                    <div className="flex-shrink-0">
+                      <div className="w-8 h-8 bg-primary-100 rounded-full flex items-center justify-center">
+                        <svg className="w-4 h-4 text-primary-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                        </svg>
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-clinical-text">Patient</span>
+                        <span className="text-xs text-clinical-muted">
+                          {new Date(entry.timestamp).toLocaleString()}
+                        </span>
+                      </div>
+                      <p className="text-clinical-text leading-relaxed">
+                        "{entry.text}"
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
         {/* Recommended Specialists */}
         {report.recommended_specialists && report.recommended_specialists.length > 0 && (
           <div className="mb-8">
