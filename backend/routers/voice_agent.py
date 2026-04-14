@@ -139,12 +139,13 @@ async def twilio_incoming_webhook(session_id: str):
     # Interactive mode: Allow user to speak and respond
     twiml = """<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Gather input="speech" timeout="5" action="/voice/gather" method="POST">
+    <Gather input="speech" timeout="60" speechTimeout="2" action="/voice/gather" method="POST">
         <Say voice="alice">
             Hello! This is the Trilens AI Health Assistant.
             Thank you for completing your consultation.
             Please tell me briefly about any symptoms you're experiencing,
             or say 'no symptoms' if you're feeling well.
+            You can speak at any time.
         </Say>
     </Gather>
     <Say voice="alice">
