@@ -506,5 +506,7 @@ def _finalize_report(
     report.call_transcript = session.call_transcript  # Copy voice transcript from session
     report.voice_analysis = voice_analysis
 
+    print(f"[voice_agent] Finalizing report {report.id} with transcript: {session.call_transcript}")
+
     db.commit()
     db.refresh(report)
