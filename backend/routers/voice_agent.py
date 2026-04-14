@@ -70,6 +70,10 @@ async def initiate_voice_consult(
     twilio_number = os.environ.get("TWILIO_PHONE_NUMBER")
     webhook_base = os.environ.get("TWILIO_WEBHOOK_BASE_URL", "").rstrip("/")
 
+    # Ensure URL is absolute to prevent Twilio HTTP -> HTTPS redirect loss
+    if webhook_base and not webhook_base.startswith("http"):
+        webhook_base = f"https://{webhook_base}"
+
     if not all([account_sid, auth_token, twilio_number, webhook_base]):
         raise HTTPException(
             status_code=503,
@@ -126,6 +130,7 @@ async def initiate_voice_consult(
 # ── POST /voice/incoming — Twilio Webhook ────────────────────────────────────
 
 @router.post("/incoming")
+@router.get("/incoming")
 async def twilio_incoming_webhook(request: Request):
     """
     Twilio hits this webhook when the call is answered.
@@ -134,13 +139,15 @@ async def twilio_incoming_webhook(request: Request):
     # Get session_id from query params
     session_id = request.query_params.get("session_id", "unknown")
     webhook_base = os.environ.get("TWILIO_WEBHOOK_BASE_URL", "").rstrip("/")
+    if webhook_base and not webhook_base.startswith("http"):
+        webhook_base = f"https://{webhook_base}"
 
     # Convert https:// to wss:// for WebSocket URL
     ws_url = webhook_base.replace("https://", "wss://").replace("http://", "ws://")
 
     twiml = f"""<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-    <Say voice="Polly.Joanna">
+    <Say voice="alice">
         Hello! This is the Trilens AI Health Assistant.
         I'll be asking you a few follow-up questions about your symptoms.
         Please speak clearly after each question.
