@@ -390,9 +390,13 @@ class VisualDiagnoseClassifier:
     # ------------------------------------------------------------------
     def predict_top3(self, features: dict | list | np.ndarray) -> list[dict]:
         """
-        Return top-3 disease candidates with normalised probabilities.
-        The probabilities of the top-3 are re-normalised so they sum to 1.0,
-        making them valid Bayesian priors even after truncation.
+        Return top disease candidates with the 'healthy' label included.
+
+        Returns 3 or 4 items depending on the prediction:
+        - If 'healthy' is NOT in XGBoost's top 3 → inject it at 0.05 probability (returns 4 items).
+        - If 'healthy' IS in XGBoost's top 3 → keep it and only return the top 3 items.
+
+        All probabilities are re-normalised to sum to 1.0.
 
         Returns list[dict] — consumed by run_classifier_pipeline() and
         the FastAPI response schema.
@@ -400,17 +404,37 @@ class VisualDiagnoseClassifier:
         x = self._to_array(features)
         proba = self._model.predict_proba(x)[0]           # shape (num_classes,)
 
-        top3_idx   = np.argsort(proba)[::-1][:3]
+        sorted_idx = np.argsort(proba)[::-1]               # all classes, descending
+
+        # Collect top 3 predictions
+        top3_idx   = sorted_idx[:3]
         top3_proba = proba[top3_idx]
         top3_proba = top3_proba / top3_proba.sum()         # re-normalise top-3
 
-        return [
+        results = [
             {
                 "disease": self._le.inverse_transform([idx])[0],
-                "probability": float(round(prob, 6)),
+                "probability": float(prob),
             }
             for idx, prob in zip(top3_idx, top3_proba)
         ]
+
+        has_healthy = any(r["disease"] == "healthy" for r in results)
+
+        if not has_healthy:
+            # Healthy NOT in top 3 → inject it at 0.05
+            results.append({"disease": "healthy", "probability": 0.05})
+
+        # Re-normalise so all items sum to 1.0
+        total_prob = sum(r["probability"] for r in results)
+        for r in results:
+            r["probability"] = r["probability"] / total_prob
+
+        # Round to 6 decimal places
+        for r in results:
+            r["probability"] = float(round(r["probability"], 6))
+
+        return results
 
     def predict_top3_tuples(
         self, features: dict | list | np.ndarray

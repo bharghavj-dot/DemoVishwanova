@@ -55,6 +55,20 @@ def _gabor_bank(img_gray: np.ndarray, mask: np.ndarray) -> float:
     return float(np.mean(responses)) if responses else 0.0
 
 
+def _apply_clahe(img: np.ndarray) -> np.ndarray:
+    """
+    Normalize uneven lighting via CLAHE on the L channel of LAB color space.
+    This helps make edge-based features (brittleness, ridges) and pitting detection
+    more robust against shadow interference.
+    """
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    l = clahe.apply(l)
+    lab = cv2.merge([l, a, b])
+    return cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+
+
 # ── main extractor ────────────────────────────────────────────────────────────
 
 def extract_nail_features(image_path: str) -> dict:
@@ -72,6 +86,8 @@ def extract_nail_features(image_path: str) -> dict:
     img = cv2.imread(image_path)
     if img is None:
         raise FileNotFoundError(f"Cannot read image: {image_path}")
+
+    img = _apply_clahe(img)  # normalize lighting before feature extraction
 
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 

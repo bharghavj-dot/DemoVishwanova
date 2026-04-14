@@ -580,9 +580,11 @@ _FALLBACK_QUESTIONS: dict[str, list[dict]] = {
 
 
 def _get_fallback_questions(top3: list[tuple[str, float]]) -> list[dict]:
-    """Return hardcoded questions for the top 3 diseases."""
+    """Return hardcoded questions for the top 3 diseases (excluding 'healthy')."""
     questions = []
     for disease, _ in top3:
+        if disease == "healthy":
+            continue  # healthy never gets its own questions
         if disease in _FALLBACK_QUESTIONS:
             questions.extend(_FALLBACK_QUESTIONS[disease])
         else:
@@ -650,6 +652,11 @@ def generate_questions(
             raise ValueError(
                 f"Unknown disease '{d}'. Must be one of: {SUPPORTED_DISEASES}"
             )
+
+    # ── Filter out 'healthy' — questions are only for disease labels ──
+    # The healthy label's probability is updated passively via inverted
+    # weights in the Bayesian updater, not via its own questions.
+    top3 = [(d, p) for d, p in top3 if d != "healthy"]
 
     # ── Offline mode: no API call ──
     if provider == "offline":

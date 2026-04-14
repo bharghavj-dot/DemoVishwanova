@@ -44,6 +44,20 @@ def _build_sclera_mask(shape, cx, cy, cr):
     return m
 
 
+def _apply_clahe(img: np.ndarray) -> np.ndarray:
+    """
+    Normalize uneven lighting via CLAHE on the L channel of LAB color space.
+    This makes color-based features (sclera yellow, conjunctiva pallor) more
+    consistent across different phone cameras and lighting conditions.
+    """
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB)
+    l, a, b = cv2.split(lab)
+    clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
+    l = clahe.apply(l)
+    lab = cv2.merge([l, a, b])
+    return cv2.cvtColor(lab, cv2.COLOR_LAB2BGR)
+
+
 # ── main extractor ────────────────────────────────────────────────────────────
 
 def extract_eye_features(image_path: str) -> dict:
@@ -61,6 +75,8 @@ def extract_eye_features(image_path: str) -> dict:
     img = cv2.imread(image_path)
     if img is None:
         raise FileNotFoundError(f"Cannot read image: {image_path}")
+
+    img = _apply_clahe(img)  # normalize lighting before feature extraction
 
     gray    = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     hsv     = cv2.cvtColor(img, cv2.COLOR_BGR2HSV)

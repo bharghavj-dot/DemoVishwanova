@@ -58,17 +58,24 @@ SUPPORTED_DISEASES = [
 #   - Gradual convergence over 5–7 questions instead of 1–2
 
 PRIMARY_WEIGHTS: dict[str, float] = {
-    "key_symptom":      0.30,   # strong positive evidence for this disease
-    "moderate_symptom": 0.22,   # moderate positive evidence
-    "possible_reason":  0.15,   # weak / indirect evidence
+    "key_symptom":      0.40,   # strong positive evidence for this disease
+    "moderate_symptom": 0.30,   # moderate positive evidence
+    "possible_reason":  0.20,   # weak / indirect evidence
     "not_relevant":     0.08,   # evidence AGAINST — but never zero
 }
 
-HEALTHY_WEIGHTS: dict[str, float] = {
+STANDARD_HEALTHY_WEIGHTS: dict[str, float] = {
     "key_symptom":      0.08,   # symptom confirmed → healthy very unlikely
-    "moderate_symptom": 0.15,   # moderate symptom → slightly less healthy
-    "possible_reason":  0.22,   # vague symptom → minor healthy penalty
-    "not_relevant":     0.30,   # no symptom → supports healthy label
+    "moderate_symptom": 0.20,   # moderate symptom → slightly less healthy
+    "possible_reason":  0.30,   # vague symptom → minor healthy penalty
+    "not_relevant":     0.40,   # no symptom → supports healthy label
+}
+
+INJECTED_HEALTHY_WEIGHTS: dict[str, float] = {
+    "key_symptom":      0.08,
+    "moderate_symptom": 0.10,
+    "possible_reason":  0.15,
+    "not_relevant":     0.25,
 }
 
 # Non-primary diseases get this constant weight regardless of answer.
@@ -108,17 +115,18 @@ def get_primary_likelihood(answer_type: str) -> float:
     return PRIMARY_WEIGHTS[answer_type]
 
 
-def get_healthy_likelihood(answer_type: str) -> float:
+def get_healthy_likelihood(answer_type: str, is_injected: bool = False) -> float:
     """
     Returns the likelihood multiplier for the HEALTHY label given one answer.
     Uses inverted weights — confirming symptoms decreases healthy probability.
     """
-    if answer_type not in HEALTHY_WEIGHTS:
+    weights = INJECTED_HEALTHY_WEIGHTS if is_injected else STANDARD_HEALTHY_WEIGHTS
+    if answer_type not in weights:
         raise ValueError(
             f"Unknown answer_type '{answer_type}'. "
             f"Must be one of: {ANSWER_TYPES}"
         )
-    return HEALTHY_WEIGHTS[answer_type]
+    return weights[answer_type]
 
 
 # ── core update function ──────────────────────────────────────────────────────
@@ -167,6 +175,7 @@ def process_answer(
     probs:       dict[str, float],
     question:    dict,
     answer_type: str,
+    is_injected: bool | None = None,
 ) -> dict[str, float]:
     """
     Given one answered question, build the 2-tier likelihood vector and
@@ -175,17 +184,19 @@ def process_answer(
     2-tier strategy:
       - Primary disease → full answer weight from PRIMARY_WEIGHTS
       - Non-primary diseases → fixed NON_PRIMARY_WEIGHT (coasting)
-      - Healthy label → inverted weight from HEALTHY_WEIGHTS
+      - Healthy label → inverted weight from STANDARD or INJECTED table
 
-    The `relevance_to` field in the question dict is intentionally IGNORED.
-    All discrimination comes from the `primary_disease` field which the LLM
-    assigns reliably (it's just a label, not a continuous value).
+    The `is_injected` flag controls which healthy weight table is used:
+      - True  → INJECTED_HEALTHY_WEIGHTS (lower weights, slower rise)
+      - False → STANDARD_HEALTHY_WEIGHTS (normal inverted weights)
+      - None  → auto-detect: injected if healthy has the lowest probability
 
     Parameters
     ----------
     probs       : current probability dict
     question    : question object from LLM JSON
     answer_type : which MCQ option the user picked
+    is_injected : whether healthy was artificially injected (auto-detects if None)
 
     Returns
     -------
@@ -194,11 +205,20 @@ def process_answer(
     primary = question["primary_disease"]
     primary_weight = get_primary_likelihood(answer_type)
 
+    # Auto-detect injection if not explicitly provided
+    if is_injected is None and "healthy" in probs:
+        # Healthy was injected if it has the lowest probability among all labels
+        healthy_prob = probs["healthy"]
+        min_prob = min(probs.values())
+        is_injected = (healthy_prob <= min_prob)
+    elif is_injected is None:
+        is_injected = False
+
     likelihoods: dict[str, float] = {}
     for disease in probs:
         if disease == "healthy":
             # Healthy always uses its own inverted logic
-            likelihoods[disease] = get_healthy_likelihood(answer_type)
+            likelihoods[disease] = get_healthy_likelihood(answer_type, is_injected)
         elif disease == primary:
             # This question is ABOUT this disease — apply full weight
             likelihoods[disease] = primary_weight
@@ -252,6 +272,9 @@ def run_session(
     probs: dict[str, float] = {
         d: p / raw_total for d, p in top3
     }
+    
+    # If we received 4 labels, check if healthy was added to the standard 3.
+    is_injected = len(top3) == 4 and "healthy" in probs
 
     active_diseases: set[str] = set(probs.keys())
     total_q = sum(
@@ -281,7 +304,7 @@ def run_session(
             answer_type = "not_relevant"
 
         # Fix 1 + Fix 3: update with renormalisation + healthy-aware weights
-        probs = process_answer(probs, question, answer_type)
+        probs = process_answer(probs, question, answer_type, is_injected)
 
         if verbose:
             _print_prob_table(
