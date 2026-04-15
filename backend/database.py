@@ -10,9 +10,11 @@ Usage:
 from __future__ import annotations
 
 import os
+import time
 from typing import Generator
 
 from sqlalchemy import create_engine
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 # ── Database URL ──────────────────────────────────────────────────────────────
@@ -39,15 +41,32 @@ if DATABASE_URL.startswith("sqlite"):
 else:
     engine_kwargs["pool_size"] = 10
     engine_kwargs["max_overflow"] = 20
+    engine_kwargs["connect_args"] = {"connect_timeout": 10}
 
 engine = create_engine(DATABASE_URL, **engine_kwargs)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
-def init_db() -> None:
-    """Ensure database tables exist before the app starts."""
-    Base.metadata.create_all(bind=engine)
+def init_db(retries: int = 3, retry_delay: float = 2.0) -> None:
+    """Ensure database tables exist before the app starts.
+
+    If PostgreSQL is temporarily unreachable, retry a few times before
+    propagating the error.
+    """
+    for attempt in range(1, retries + 1):
+        try:
+            if DATABASE_URL.startswith("sqlite"):
+                Base.metadata.create_all(bind=engine)
+            else:
+                with engine.begin() as conn:
+                    Base.metadata.create_all(bind=conn)
+            return
+        except OperationalError as exc:
+            print(f"[database] init_db attempt {attempt}/{retries} failed: {exc}")
+            if attempt == retries:
+                raise
+            time.sleep(retry_delay)
 
 
 # ── Declarative Base ──────────────────────────────────────────────────────────

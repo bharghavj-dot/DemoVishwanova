@@ -104,12 +104,20 @@ def migrate_db():
 # ── Startup Event ─────────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup_event():
+    db_failed = False
     try:
         init_db()
         print("[startup] Database tables ensured")
     except Exception as e:
+        db_failed = True
         print(f"[startup] ERROR: database initialization failed: {e}")
-        raise
+        print(
+            "[startup] Continuing startup without database initialization. "
+            "Database-backed endpoints may fail until the connection is restored."
+        )
+
+    if db_failed and os.environ.get("REQUIRE_DB_ON_STARTUP", "false").lower() in ("1", "true", "yes"):
+        raise RuntimeError("Database initialization failed and REQUIRE_DB_ON_STARTUP=true")
 
     try:
         from backend.pipeline.orchestrator import get_classifier
