@@ -26,11 +26,8 @@ _PROJECT_ROOT = str(Path(__file__).resolve().parent.parent)
 if _PROJECT_ROOT not in sys.path:
     sys.path.insert(0, _PROJECT_ROOT)
 
-from backend.database import Base, engine
+from backend.database import init_db
 from backend.models.schemas import HealthResponse
-
-# Create database tables
-Base.metadata.create_all(bind=engine)
 
 app = FastAPI(
     title="Trilens API",
@@ -107,6 +104,13 @@ def migrate_db():
 # ── Startup Event ─────────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup_event():
+    try:
+        init_db()
+        print("[startup] Database tables ensured")
+    except Exception as e:
+        print(f"[startup] ERROR: database initialization failed: {e}")
+        raise
+
     try:
         from backend.pipeline.orchestrator import get_classifier
         get_classifier()

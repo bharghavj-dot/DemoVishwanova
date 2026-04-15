@@ -45,6 +45,11 @@ engine = create_engine(DATABASE_URL, **engine_kwargs)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
+def init_db() -> None:
+    """Ensure database tables exist before the app starts."""
+    Base.metadata.create_all(bind=engine)
+
+
 # ── Declarative Base ──────────────────────────────────────────────────────────
 
 class Base(DeclarativeBase):
