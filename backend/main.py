@@ -147,6 +147,16 @@ async def health_check():
         uptime=f"{hours}h {minutes}m {seconds}s",
     )
 
+@app.post("/seed", tags=["System"])
+async def seed_db():
+    """Seed the database with demo data if empty."""
+    try:
+        from backend.seed import seed
+        seed()
+        return {"message": "Database seeded successfully"}
+    except Exception as e:
+        return {"error": str(e)}
+
 @app.get("/", tags=["System"])
 async def root():
     return {"message": "Trilens API v1.0.0", "docs": "/docs", "health": "/health"}
