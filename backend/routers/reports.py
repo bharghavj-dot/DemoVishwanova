@@ -69,7 +69,7 @@ async def get_report(
     report = crud.get_report_by_session(db, session_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found for this session")
-    if report.user_id != user["id"]:
+    if report.user_id != user["id"] and user.get("role") != "doctor":
         raise HTTPException(status_code=403, detail="Report belongs to another user")
 
     primary = report.primary_disease
@@ -109,7 +109,7 @@ async def get_final_report(
     report = crud.get_report_by_session(db, session_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    if report.user_id != user["id"]:
+    if report.user_id != user["id"] and user.get("role") != "doctor":
         raise HTTPException(status_code=403, detail="Report belongs to another user")
 
     if not report.is_final or not report.final_data:
@@ -168,10 +168,17 @@ async def get_final_report(
     finalized_at = report.finalized_at.isoformat() + "Z" if report.finalized_at else ""
     created_at = report.created_at.isoformat() + "Z" if report.created_at else ""
 
+    # Resolve patient name — if a doctor is viewing, look up the actual patient
+    if report.user_id != user["id"]:
+        patient_user = crud.get_user_by_id(db, report.user_id)
+        patient_name = patient_user.full_name if patient_user else "Patient"
+    else:
+        patient_name = user["full_name"]
+
     return FinalReportResponse(
         session_id=session_id,
         report_id=report.id,
-        patient_name=user["full_name"],
+        patient_name=patient_name,
         generated_at=finalized_at or created_at,
         diagnostic_confidence=top_prob,
         primary_disease=top_disease,
@@ -201,7 +208,7 @@ async def download_pdf_report(
     report = crud.get_report_by_session(db, session_id)
     if not report:
         raise HTTPException(status_code=404, detail="Report not found")
-    if report.user_id != user["id"]:
+    if report.user_id != user["id"] and user.get("role") != "doctor":
         raise HTTPException(status_code=403, detail="Report belongs to another user")
 
     # Convert ORM to dict for PDF generator

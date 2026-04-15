@@ -104,20 +104,26 @@ def migrate_db():
 # ── Startup Event ─────────────────────────────────────────────────────────────
 @app.on_event("startup")
 async def startup_event():
+    auto_db_init = os.environ.get("AUTO_DB_INIT", "false").lower() in ("1", "true", "yes")
     db_failed = False
-    try:
-        init_db()
-        print("[startup] Database tables ensured")
-    except Exception as e:
-        db_failed = True
-        print(f"[startup] ERROR: database initialization failed: {e}")
-        print(
-            "[startup] Continuing startup without database initialization. "
-            "Database-backed endpoints may fail until the connection is restored."
-        )
 
-    if db_failed and os.environ.get("REQUIRE_DB_ON_STARTUP", "false").lower() in ("1", "true", "yes"):
-        raise RuntimeError("Database initialization failed and REQUIRE_DB_ON_STARTUP=true")
+    if auto_db_init:
+        try:
+            init_db()
+            print("[startup] Database tables ensured")
+        except Exception as e:
+            db_failed = True
+            print(f"[startup] ERROR: database initialization failed: {e}")
+            print(
+                "[startup] Continuing startup without database initialization. "
+                "Database-backed endpoints may fail until the connection is restored."
+            )
+
+        if db_failed and os.environ.get("REQUIRE_DB_ON_STARTUP", "false").lower() in ("1", "true", "yes"):
+            raise RuntimeError("Database initialization failed and REQUIRE_DB_ON_STARTUP=true")
+    else:
+        print("[startup] AUTO_DB_INIT is disabled. Database initialization will not run automatically.")
+        print("[startup] Use /migrate_db or run backend/migrate_db.py when the database is available.")
 
     try:
         from backend.pipeline.orchestrator import get_classifier
@@ -128,11 +134,14 @@ async def startup_event():
         print(f"[startup] WARNING: {e}")
 
     # Auto-seed demo data if the database is empty
-    try:
-        from backend.seed import seed
-        seed()
-    except Exception as e:
-        print(f"[startup] Seed skipped or failed: {e}")
+    if not db_failed and auto_db_init:
+        try:
+            from backend.seed import seed
+            seed()
+        except Exception as e:
+            print(f"[startup] Seed skipped or failed: {e}")
+    else:
+        print("[startup] Skipping seed because database initialization was not successful or AUTO_DB_INIT is disabled.")
 
 
 # ── Health & Root ─────────────────────────────────────────────────────────────

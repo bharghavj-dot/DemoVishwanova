@@ -10,11 +10,13 @@ export default function VoiceConsult() {
   const navigate = useNavigate();
 
   const [phone, setPhone] = useState(state.user?.phone_number || '');
-  const [status, setStatus] = useState('none'); // none, pending, in_progress, analysis, skipped
+  const [status, setStatus] = useState('none'); // none, pending, in_progress, analysis, skipped, fallback
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   
   const pollingInterval = useRef(null);
+  const retryCount = useRef(0);
+  const MAX_RETRIES = 15; // ~30 seconds of polling at 2s intervals
 
   // ── Polling for status updates ──
   const checkStatus = async () => {
@@ -30,6 +32,13 @@ export default function VoiceConsult() {
           navigate(`/report/${session_id}/final`);
           return;
         } catch {
+          retryCount.current += 1;
+          if (retryCount.current >= MAX_RETRIES) {
+            // Report finalization failed — stop polling, show fallback
+            clearInterval(pollingInterval.current);
+            setStatus('fallback');
+            return;
+          }
           if (status !== 'analysis') setStatus('analysis');
           return;
         }
@@ -68,6 +77,7 @@ export default function VoiceConsult() {
     
     setLoading(true);
     setError(null);
+    retryCount.current = 0;
     try {
       await API.post(`/voice/${session_id}/initiate`, { phone_number: phone });
       setStatus('pending');
@@ -187,6 +197,35 @@ export default function VoiceConsult() {
               <LoadingSpinner size="lg" />
               <h2 className="text-xl font-bold text-clinical-text mt-6">Analyzing Consultation...</h2>
               <p className="text-clinical-muted mt-2 max-w-sm">Generating a clinical summary and adjusting your final diagnostic probabilities.</p>
+            </div>
+          )}
+
+          {status === 'fallback' && (
+            <div className="py-8 flex flex-col items-center">
+              <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-50 flex items-center justify-center">
+                <svg className="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                </svg>
+              </div>
+              <h2 className="text-xl font-bold text-clinical-text">Call Completed</h2>
+              <p className="text-clinical-muted mt-2 max-w-sm mb-6">Your voice consultation has been recorded. You can view your final report from the dashboard.</p>
+              <div className="flex flex-col sm:flex-row gap-3">
+                <button
+                  onClick={() => navigate('/dashboard')}
+                  className="btn-primary flex items-center justify-center gap-2"
+                >
+                  Go to Dashboard
+                </button>
+                <button
+                  onClick={() => {
+                    retryCount.current = 0;
+                    setStatus('analysis');
+                  }}
+                  className="btn-ghost"
+                >
+                  Retry Loading Report
+                </button>
+              </div>
             </div>
           )}
         </div>

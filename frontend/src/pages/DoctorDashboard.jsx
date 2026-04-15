@@ -28,7 +28,7 @@ export default function DoctorDashboard() {
       await API.put(`/doctor/bookings/${bookingId}`, { action });
       dispatch({ type: 'SET_TOAST', payload: { message: `Booking ${action}ed successfully`, type: 'success' } });
       if (action === 'review' && sessionId) {
-        navigate(`/report/${sessionId}`);
+        navigate(`/report/${sessionId}/final`);
       }
       const res = await API.get('/doctor/dashboard');
       setData(res.data);

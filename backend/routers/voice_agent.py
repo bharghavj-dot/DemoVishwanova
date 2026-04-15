@@ -186,7 +186,7 @@ async def twilio_gather_speech(request: Request):
 
     # Process the user's speech
     if speech_result:
-        # Save the speech to database
+        # Save the speech to database AND finalize the report immediately
         db = SessionLocal()
         try:
             session = crud.get_session(db, session_id)
@@ -198,14 +198,37 @@ async def twilio_gather_speech(request: Request):
                     "timestamp": datetime.now().isoformat() + "Z"
                 }]
 
+                # Finalize with existing MCQ probabilities + voice transcript
+                updated_probs = session.qa_probabilities or session.priors or {}
+                final_output = session.final_output or generate_final_output(updated_probs)
+
                 crud.update_session(
                     db, session,
                     call_transcript=transcript,
-                    voice_status="completed"
+                    voice_status="completed",
+                    status="finalized",
+                    final_output=final_output,
                 )
-                print(f"[voice_agent] Speech saved to session {session_id}")
+
+                # Finalize the report so the frontend can redirect immediately
+                report = crud.get_report_by_session(db, session_id)
+                if report:
+                    ranked = sorted(updated_probs.items(), key=lambda x: x[1], reverse=True)
+                    crud.finalize_report(
+                        db, report,
+                        final_data=final_output,
+                        primary_disease=ranked[0][0] if ranked else report.primary_disease,
+                        confidence=ranked[0][1] if ranked else report.confidence,
+                        severity=final_output.get("severity", report.severity),
+                    )
+                    report.call_transcript = transcript
+                    db.commit()
+                    print(f"[voice_agent] ✓ Report finalized in /gather with transcript")
+
+                print(f"[voice_agent] Speech saved and report finalized for session {session_id}")
         except Exception as e:
-            print(f"[voice_agent] Error saving speech: {e}")
+            print(f"[voice_agent] Error saving speech / finalizing: {e}")
+            traceback.print_exc()
         finally:
             db.close()
 
